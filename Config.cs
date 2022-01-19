@@ -1,5 +1,4 @@
 using System.IO;
-using System.Linq;
 using System.Xml.Linq;
 
 namespace Until
@@ -10,11 +9,6 @@ namespace Until
 		public ulong OwnerID;
 
 		public Config() { }
-		public Config(string token, ulong ownerId)
-		{
-			this.Token = token;
-			this.OwnerID = ownerId;
-		}
 
 		public static Config FromXML(string path)
 		{
@@ -22,8 +16,9 @@ namespace Until
 			using (StreamReader stream = File.OpenText(path))
 			{
 				XDocument config = XDocument.Load(stream);
-				temp.Token = config.Element("config").Descendants().ToList()[0].Value;
-				temp.OwnerID = ulong.Parse(config.Element("config").Descendants().ToList()[1].Value);
+				var configElement = config.Element("config");
+				temp.Token = configElement.Element("token").Value;
+				temp.OwnerID = ulong.Parse(configElement.Element("ownerid").Value);
 			}
 			return temp;
 		}
