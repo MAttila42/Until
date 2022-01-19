@@ -64,7 +64,7 @@ namespace Until
 
         private bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
         {
-            return ((IGuildUser)ctx.Channel.GetUserAsync(ctx.User.Id)).GetPermissions(ctx.Channel as IGuildChannel).SendMessages;
+            return ctx.Guild.GetUser(ctx.User.Id).GetPermissions(ctx.Channel as IGuildChannel).SendMessages;
         }
     }
 }
