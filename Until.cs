@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +19,7 @@ namespace Until
         public Until(Config config)
         {
             this._config = config;
-            this._client = new DiscordSocketClient();
+            this._client = new DiscordSocketClient(new DiscordSocketConfig() { GatewayIntents = GatewayIntents.All });
             this._interaction = new InteractionService(_client.Rest);
 
             this._services = new ServiceCollection()
@@ -44,13 +42,14 @@ namespace Until
                 var ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
                 if (HasPerm(ctx))
                     await _interaction.ExecuteCommandAsync(ctx, _services);
+                else await ctx.Interaction.RespondAsync(embed: ErrorEmbed("You can't use that command here!"), ephemeral: true);
             };
 
             _client.Ready += async () =>
             {
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
                 await _interaction.RegisterCommandsGloballyAsync();
-                await _interaction.RegisterCommandsToGuildAsync(712287958274801695);
+                await _interaction.RegisterCommandsToGuildAsync(_config.DevServerID);
             };
 
             await Task.Delay(-1);
@@ -64,7 +63,21 @@ namespace Until
 
         private bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
         {
-            return ctx.Guild.GetUser(ctx.User.Id).GetPermissions(ctx.Channel as IGuildChannel).SendMessages;
+            var permissions = ctx.Guild.GetUser(_client.CurrentUser.Id).GetPermissions(ctx.Guild.GetChannel(ctx.Channel.Id));
+            return permissions.ViewChannel && permissions.SendMessages;
+        }
+
+        public static Embed ErrorEmbed(string msg)
+        {
+            return new EmbedBuilder()
+                .WithAuthor(author =>
+                {
+                    author
+                        .WithName(msg)
+                        .WithIconUrl("https://media.discordapp.net/attachments/932549944705970186/932551072621404200/noun_Close_1984788.png"); // Close by Bismillah from the Noun Project
+                    })
+                .WithColor(new Color(0xff1821))
+                .Build();
         }
     }
 }

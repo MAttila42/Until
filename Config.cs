@@ -7,6 +7,7 @@ namespace Until
 	{
 		public string Token;
 		public ulong OwnerID;
+		public ulong DevServerID;
 
 		public Config() { }
 
@@ -19,6 +20,7 @@ namespace Until
 				var configElement = config.Element("config");
 				temp.Token = configElement.Element("token").Value;
 				temp.OwnerID = ulong.Parse(configElement.Element("ownerid").Value);
+				temp.DevServerID = ulong.Parse(configElement.Element("devserverid").Value);
 			}
 			return temp;
 		}
