@@ -19,13 +19,7 @@ namespace Until
         public Until(Config config)
         {
             this._config = config;
-            this._client = new DiscordSocketClient(new DiscordSocketConfig()
-            {
-                GatewayIntents =
-                    GatewayIntents.GuildMessageReactions &
-                    GatewayIntents.GuildMessages &
-                    GatewayIntents.Guilds
-            });
+            this._client = new DiscordSocketClient(new DiscordSocketConfig() { GatewayIntents = GatewayIntents.All });
             this._interaction = new InteractionService(_client.Rest);
 
             this._services = new ServiceCollection()
@@ -48,7 +42,7 @@ namespace Until
                 var ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
                 if (HasPerm(ctx))
                     await _interaction.ExecuteCommandAsync(ctx, _services);
-                else await ctx.Interaction.RespondAsync(embed: ErrorEmbed("You can't use that command here!"), ephemeral: true);
+                else await ctx.Interaction.RespondAsync(embed: SimpleEmbed("error", "You can't use that command here!"), ephemeral: true);
             };
 
             _client.Ready += async () =>
@@ -73,17 +67,23 @@ namespace Until
             return permissions.ViewChannel && permissions.SendMessages;
         }
 
-        public static Embed ErrorEmbed(string msg)
+        public static Embed SimpleEmbed(string type, string msg)
         {
-            return new EmbedBuilder()
-                .WithAuthor(author =>
-                {
-                    author
-                        .WithName(msg)
-                        .WithIconUrl("https://media.discordapp.net/attachments/932549944705970186/932551072621404200/noun_Close_1984788.png"); // Close by Bismillah from the Noun Project
-                    })
-                .WithColor(new Color(0xff1821))
-                .Build();
+            var embed = new EmbedBuilder();
+            switch (type)
+            {
+                case "info":
+                    embed.WithAuthor(msg, "https://media.discordapp.net/attachments/932549944705970186/933639624507658300/noun-info-2631565.png");
+                    embed.WithColor(new Color(0x5864f2));
+                    break;
+                case "error":
+                    embed.WithAuthor(msg, "https://media.discordapp.net/attachments/932549944705970186/932551072621404200/noun_Close_1984788.png");
+                    embed.WithColor(new Color(0xff1821));
+                    break;
+                default:
+                    break;
+            }
+            return embed.Build();
         }
     }
 }

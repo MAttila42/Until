@@ -13,7 +13,7 @@ namespace Until.Commands
 		{
 			if (Context.User.Id != _config.OwnerID)
 			{
-				await RespondAsync(embed: Until.ErrorEmbed("You can't use that command!"), ephemeral: true);
+				await RespondAsync(embed: Until.SimpleEmbed("You can't use that command!"), ephemeral: true);
 				return;
 			}
 
