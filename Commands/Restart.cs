@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Interactions;
 
 namespace Until.Commands
 {
-    class Restart : InteractionModuleBase
+    public class Restart : InteractionModuleBase
     {
         [SlashCommand("restart", "Restart bot")]
         public async Task Run()
