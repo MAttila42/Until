@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
@@ -19,9 +16,9 @@ namespace Until.Commands
                 string commands =
                     "cd ..\n" +
                     "git pull\n" +
-                    "dotnet build -o build\n" +
+                    "sudo dotnet build -o build\n" +
                     "cd build\n" +
-                    "dotnet GroundedBot.dll";
+                    "sudo dotnet GroundedBot.dll";
                 var process = new ProcessStartInfo
                 {
                     FileName = "/bin/bash",
