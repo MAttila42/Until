@@ -19,7 +19,13 @@ namespace Until
         public Until(Config config)
         {
             this._config = config;
-            this._client = new DiscordSocketClient(new DiscordSocketConfig() { GatewayIntents = GatewayIntents.All });
+            this._client = new DiscordSocketClient(new DiscordSocketConfig()
+            {
+                GatewayIntents =
+                    GatewayIntents.GuildMessageReactions &
+                    GatewayIntents.GuildMessages &
+                    GatewayIntents.Guilds
+            });
             this._interaction = new InteractionService(_client.Rest);
 
             this._services = new ServiceCollection()
@@ -48,7 +54,7 @@ namespace Until
             _client.Ready += async () =>
             {
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-                await _interaction.RegisterCommandsGloballyAsync();
+                //await _interaction.RegisterCommandsGloballyAsync();
                 await _interaction.RegisterCommandsToGuildAsync(_config.DevServerID);
             };
 
