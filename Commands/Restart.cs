@@ -8,6 +8,7 @@ namespace Until.Commands
 {
     class Restart : InteractionModuleBase
     {
+        [SlashCommand("restart", "Restart bot")]
         public async Task Run()
         {
             try
