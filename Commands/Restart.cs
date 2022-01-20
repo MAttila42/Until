@@ -12,13 +12,13 @@ namespace Until.Commands
         {
             try
             {
-                await RespondAsync("Restarting bot... (This may take a few moments)");
+                await RespondAsync(embed: Until.SimpleEmbed("info", "Restarting bot... (This may take a few moments)"));
                 string commands =
                     "cd ..\n" +
                     "git pull\n" +
                     "sudo dotnet build -o build\n" +
                     "cd build\n" +
-                    "sudo dotnet GroundedBot.dll";
+                    "sudo dotnet Until.dll";
                 var process = new ProcessStartInfo
                 {
                     FileName = "/bin/bash",
@@ -30,7 +30,7 @@ namespace Until.Commands
                 Process.Start(process);
                 Environment.Exit(0);
             }
-            catch (Exception) { await RespondAsync(embed: Until.SimpleEmbed("info", "Can't find bash!")); }
+            catch (Exception) { await RespondAsync(embed: Until.SimpleEmbed("error", "Can't find bash!")); }
         }
     }
 }
