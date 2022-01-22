@@ -58,7 +58,7 @@ namespace Until.Commands
                 Process.Start(process);
                 Environment.Exit(0);
             }
-            catch (Exception) { await RespondAsync(embed: Until.SimpleEmbed("error", "Can't find bash!")); }
+            catch (Exception) { await RespondAsync(embed: Until.SimpleEmbed("error", "Can't find bash!"), ephemeral: true); }
         }
     }
 }
