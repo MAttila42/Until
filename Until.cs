@@ -73,7 +73,7 @@ namespace Until
             switch (type)
             {
                 case "info":
-                    embed.WithAuthor(msg, "https://media.discordapp.net/attachments/932549944705970186/933639624507658300/noun-info-2631565.png");
+                    embed.WithAuthor(msg, "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png");
                     embed.WithColor(new Color(0x5864f2));
                     break;
                 case "error":
