@@ -8,7 +8,7 @@ namespace Until.Commands
 	{
 		public Config _config { get; set; }
 
-		[SlashCommand("test", "Test something")]
+		[SlashCommand("test", "[DEV] Test something")]
 		public async Task Run()
 		{
 			if (Context.User.Id != _config.OwnerID)
