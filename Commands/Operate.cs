@@ -8,6 +8,7 @@ namespace Until.Commands
     public class Operate : InteractionModuleBase
     {
         public Config _config { get; set; }
+        public EmbedService _embed { get; set; }
 
         public enum Operation
         {
@@ -20,7 +21,7 @@ namespace Until.Commands
         {
             if (Context.User.Id != _config.OwnerID)
             {
-                await RespondAsync(embed: Until.SimpleEmbed("error", "You can't use that command!"), ephemeral: true);
+                await RespondAsync(embed: _embed.Error("You can't use that command!"), ephemeral: true);
                 return;
             }
 
@@ -30,11 +31,11 @@ namespace Until.Commands
                 switch (operation)
                 {
                     case Operation.ShutDown:
-                        await RespondAsync(embed: Until.SimpleEmbed("info", "Shutting down..."));
+                        await RespondAsync(embed: _embed.Info("Shutting down..."));
                         Environment.Exit(0);
                         break;
                     case Operation.Restart:
-                        await RespondAsync(embed: Until.SimpleEmbed("info", "Restarting bot... (This may take a few moments)"));
+                        await RespondAsync(embed: _embed.Info("Restarting bot... (This may take a few moments)"));
                         commands =
                             "cd ..\n" +
                             "sudo git pull\n" +
@@ -43,7 +44,7 @@ namespace Until.Commands
                             "sudo dotnet Until.dll";
                         break;
                     default:
-                        await RespondAsync(embed: Until.SimpleEmbed("error", "Can't do operation!"));
+                        await RespondAsync(embed: _embed.Error("Can't do operation!"));
                         return;
                 }
 
@@ -58,7 +59,7 @@ namespace Until.Commands
                 Process.Start(process);
                 Environment.Exit(0);
             }
-            catch (Exception) { await RespondAsync(embed: Until.SimpleEmbed("error", "Can't find bash!"), ephemeral: true); }
+            catch (Exception) { await RespondAsync(embed: _embed.Error("Can't find bash!"), ephemeral: true); }
         }
     }
 }
