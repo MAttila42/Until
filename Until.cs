@@ -48,8 +48,8 @@ namespace Until
             _client.Ready += async () =>
             {
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-                //await _interaction.RegisterCommandsGloballyAsync();
-                await _interaction.RegisterCommandsToGuildAsync(_config.DevServerID);
+                foreach (var g in _client.Guilds)
+                    await _interaction.RegisterCommandsToGuildAsync(g.Id);
             };
 
             await Task.Delay(-1);

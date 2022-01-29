@@ -37,7 +37,7 @@ namespace Until.Commands
                         await RespondAsync(embed: Until.SimpleEmbed("info", "Restarting bot... (This may take a few moments)"));
                         commands =
                             "cd ..\n" +
-                            "git pull\n" +
+                            "sudo git pull\n" +
                             "sudo dotnet build -o build\n" +
                             "cd build\n" +
                             "sudo dotnet Until.dll";
