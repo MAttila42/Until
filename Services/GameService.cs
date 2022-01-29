@@ -1,10 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Discord;
 
 namespace Until
 {
     public class GameService
     {
         public List<Game> Games;
+
+        public bool AlreadyPlaying(IInteractionContext ctx)
+        {
+            foreach (Game g in this.Games.Where(g => g.ChannelID == ctx.Channel.Id))
+                if (g.Players.Contains(ctx.User.Id))
+                    return true;
+            return false;
+        }
 
         public GameService()
         {

@@ -51,15 +51,24 @@ namespace Until
             _client.SlashCommandExecuted += async (interaction) =>
             {
                 var ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
-                if (HasPerm(ctx))
-                    await _interaction.ExecuteCommandAsync(ctx, _services);
-                else await ctx.Interaction.RespondAsync(embed: _embed.Error("You can't use that command here!"), ephemeral: true);
+                if (!HasPerm(ctx))
+                {
+                    await ctx.Interaction.RespondAsync(embed: _embed.Error("You can't use that command here!"), ephemeral: true);
+                    return;
+                }
+                else if (_game.AlreadyPlaying(ctx))
+                {
+                    await ctx.Interaction.RespondAsync(embed: _embed.Error("You are already playing a game here!"), ephemeral: true);
+                    return;
+                }
+
+                await _interaction.ExecuteCommandAsync(ctx, _services);
             };
 
             _client.Ready += async () =>
             {
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-                foreach (var g in _client.Guilds)
+                foreach (SocketGuild g in _client.Guilds)
                     await _interaction.RegisterCommandsToGuildAsync(g.Id);
             };
             _client.JoinedGuild += async (guild) =>
