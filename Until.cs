@@ -15,6 +15,7 @@ namespace Until
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _interaction;
         private readonly EmbedService _embed;
+        private readonly GameService _game;
 
         private readonly IServiceProvider _services;
 
@@ -28,12 +29,14 @@ namespace Until
             });
             this._interaction = new InteractionService(_client.Rest);
             this._embed = new EmbedService();
+            this._game = new GameService();
 
             this._services = new ServiceCollection()
                 .AddSingleton(_config)
                 .AddSingleton(_client)
                 .AddSingleton(_interaction)
                 .AddSingleton(_embed)
+                .AddSingleton(_game)
                 .BuildServiceProvider();
         }
 
