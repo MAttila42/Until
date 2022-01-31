@@ -50,18 +50,16 @@ namespace Until
 
             _client.SlashCommandExecuted += async (interaction) =>
             {
-                var ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
+                SocketInteractionContext<SocketSlashCommand> ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
                 if (!HasPerm(ctx))
-                {
                     await ctx.Interaction.RespondAsync(embed: _embed.Error("You can't use that command here!"), ephemeral: true);
-                    return;
-                }
-                else if (_game.AlreadyPlaying(ctx))
-                {
-                    await ctx.Interaction.RespondAsync(embed: _embed.Error("You are already playing a game here!"), ephemeral: true);
-                    return;
-                }
+                else
+                    await _interaction.ExecuteCommandAsync(ctx, _services);
+            };
 
+            _client.ButtonExecuted += async (interaction) =>
+            {
+                SocketInteractionContext<SocketMessageComponent> ctx = new SocketInteractionContext<SocketMessageComponent>(_client, interaction);
                 await _interaction.ExecuteCommandAsync(ctx, _services);
             };
 

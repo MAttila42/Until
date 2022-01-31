@@ -54,7 +54,7 @@ namespace Until.Commands
                     Arguments = $"-c \"{commands}\"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true,
+                    CreateNoWindow = true
                 };
                 Process.Start(process);
                 Environment.Exit(0);

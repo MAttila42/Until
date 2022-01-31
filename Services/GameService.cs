@@ -8,6 +8,8 @@ namespace Until
     {
         public List<Game> Games;
 
+        public Game RunningGame(IInteractionContext ctx) => this.Games[this.Games.IndexOf(this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Contains(ctx.User.Id)))];
+
         public bool AlreadyPlaying(IInteractionContext ctx)
         {
             foreach (Game g in this.Games.Where(g => g.ChannelID == ctx.Channel.Id))
@@ -31,21 +33,6 @@ namespace Until
         {
             this.ChannelID = channelId;
             this.Players = new List<ulong>();
-        }
-    }
-
-    public class SequenceGame : Game
-    {
-        public enum Status
-        {
-            WaitingForPlayers
-        }
-
-        public Status CurrentStatus;
-
-        public SequenceGame(ulong channelId) : base(channelId)
-        {
-            this.CurrentStatus = Status.WaitingForPlayers;
         }
     }
 }
