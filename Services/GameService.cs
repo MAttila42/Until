@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Discord;
 
 namespace Until
@@ -8,15 +7,7 @@ namespace Until
     {
         public List<Game> Games;
 
-        public Game RunningGame(IInteractionContext ctx) => this.Games[this.Games.IndexOf(this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Contains(ctx.User.Id)))];
-
-        public bool AlreadyPlaying(IInteractionContext ctx)
-        {
-            foreach (Game g in this.Games.Where(g => g.ChannelID == ctx.Channel.Id))
-                if (g.Players.Contains(ctx.User.Id))
-                    return true;
-            return false;
-        }
+        public Game RunningGame(IInteractionContext ctx) => this.Games[this.Games.IndexOf(this.Games.Find(g => g.ChannelID == ctx.Channel.Id))];
 
         public GameService()
         {
@@ -28,6 +19,7 @@ namespace Until
     {
         public ulong ChannelID;
         public List<ulong> Players;
+        public EmbedBuilder TempEmbed;
 
         public Game(ulong channelId)
         {
