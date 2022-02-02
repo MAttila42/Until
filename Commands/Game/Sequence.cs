@@ -27,6 +27,7 @@ namespace Until.Commands
                     .WithAuthor("Sequence rules", "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png")
                     .AddField("Basic concept", "Everyone gets 7 card. Each round you can put a chip at one of your card's place and get a new card. The goal is to make 2 rows of 5 chips (2 players) or just 1 row when playing with 3 players.")
                     .Build();
+                await RespondAsync(embed: rulesEmbed);
                 return;
             }
 
