@@ -21,6 +21,15 @@ namespace Until.Commands
         [SlashCommand("sequence", "Start a new game of Sequence")]
         public async Task Run(Param param = Param.Play)
         {
+            if (param == Param.Rules)
+            {
+                Embed rulesEmbed = new EmbedBuilder()
+                    .WithAuthor("Sequence rules", "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png")
+                    .AddField("Basic concept", "Everyone gets 7 card. Each round you can put a chip at one of your card's place and get a new card. The goal is to make 2 rows of 5 chips (2 players) or just 1 row when playing with 3 players.")
+                    .Build();
+                return;
+            }
+
             if (_game.Games.Count(g => g.ChannelID == Context.Channel.Id) != 0)
             {
                 await RespondAsync(embed: _embed.Error("A game is already being played here!"), ephemeral: true);

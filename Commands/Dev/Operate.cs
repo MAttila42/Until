@@ -17,7 +17,7 @@ namespace Until.Commands
         }
 
         [SlashCommand("operate", "[DEV] Operate bot")]
-        public async Task Run(Operation operation)
+        public async Task Run(Operation operation = Operation.Restart)
         {
             if (Context.User.Id != _config.OwnerID)
             {
