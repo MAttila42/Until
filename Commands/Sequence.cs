@@ -52,6 +52,7 @@ namespace Until.Commands
             _game.RunningGame(ctx).TempEmbed.Fields[0].Value = players;
 
             await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m => m.Embed = _game.RunningGame(ctx).TempEmbed.Build());
+            await RespondAsync();
         }
 
         [ComponentInteraction("sequence-join")]
