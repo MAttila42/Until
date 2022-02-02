@@ -79,12 +79,16 @@ namespace Until.Commands
 
             _game.RunningGame(Context).Players.Remove(Context.User.Id);
             if (_game.RunningGame(Context).Players.Count > 0)
-            {
                 await UpdatePlayerList(Context);
-            }
             else
             {
-                // TODO - Stop the game
+                _game.Games.Remove(_game.RunningGame(Context));
+                Embed embed = new EmbedBuilder()
+                    .WithAuthor("Sequence")
+                    .WithDescription("The game has ended.")
+                    .Build();
+
+                await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
             }
         }
     }
