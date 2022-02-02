@@ -19,7 +19,7 @@ namespace Until.Commands
             {
                 Embed rulesEmbed = new EmbedBuilder()
                     .WithAuthor("Sequence rules", _embed.InfoIcon)
-                    .AddField("Basic concept", "Everyone gets 7 card. Each round you can put a chip at one of your card's place and get a new card. The goal is to make 2 rows of 5 chips (2 players) or just 1 row when playing with 3 players.")
+                    .AddField("Basic concept", "Everyone gets 7 cards. Each round you can put a chip at one of your card's place on the table and get a new card. The goal is to make 2 rows of 5 chips (2 players) or just 1 row when playing with 3 players.")
                     .WithColor(new Color(0x5864f2))
                     .Build();
                 await RespondAsync(embed: rulesEmbed);
