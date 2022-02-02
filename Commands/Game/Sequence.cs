@@ -13,7 +13,7 @@ namespace Until.Commands
         public GameService _game { get; set; }
 
         [SlashCommand("sequence", "Start a new game of Sequence")]
-        public async Task Run([Summary("Rules", "Show how to play Sequence")]bool rules = false)
+        public async Task Run([Summary(description: "Show how to play Sequence")]bool rules = false)
         {
             if (rules)
             {
