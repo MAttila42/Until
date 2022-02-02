@@ -18,7 +18,7 @@ namespace Until.Commands
             if (rules)
             {
                 Embed rulesEmbed = new EmbedBuilder()
-                    .WithAuthor("Sequence rules", "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png")
+                    .WithAuthor("Sequence rules", _embed.InfoIcon)
                     .AddField("Basic concept", "Everyone gets 7 card. Each round you can put a chip at one of your card's place and get a new card. The goal is to make 2 rows of 5 chips (2 players) or just 1 row when playing with 3 players.")
                     .WithColor(new Color(0x5864f2))
                     .Build();
@@ -66,12 +66,6 @@ namespace Until.Commands
             await RespondAsync();
         }
 
-        [ComponentInteraction("sequence-play")]
-        public async Task Play()
-        {
-
-        }
-
         [ComponentInteraction("sequence-join")]
         public async Task Join()
         {
@@ -108,6 +102,20 @@ namespace Until.Commands
 
                 await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
             }
+        }
+
+        [ComponentInteraction("sequence-play")]
+        public async Task Play()
+        {
+            Embed embed = new EmbedBuilder()
+                .WithAuthor("Sequence")
+                .WithDescription($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn")
+                .WithColor(new Color(0x5864f2))
+                .Build();
+            MessageComponent components = new ComponentBuilder()
+                .Build();
+
+            await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = components; });
         }
     }
 }
