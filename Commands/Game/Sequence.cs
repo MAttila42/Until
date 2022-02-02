@@ -12,16 +12,10 @@ namespace Until.Commands
         public EmbedService _embed { get; set; }
         public GameService _game { get; set; }
 
-        public enum Param
-        {
-            Play,
-            Rules
-        }
-
         [SlashCommand("sequence", "Start a new game of Sequence")]
-        public async Task Run(Param param = Param.Play)
+        public async Task Run(bool Rules = false)
         {
-            if (param == Param.Rules)
+            if (Rules)
             {
                 Embed rulesEmbed = new EmbedBuilder()
                     .WithAuthor("Sequence rules", "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png")
