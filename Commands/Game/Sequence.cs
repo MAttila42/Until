@@ -13,9 +13,9 @@ namespace Until.Commands
         public GameService _game { get; set; }
 
         [SlashCommand("sequence", "Start a new game of Sequence")]
-        public async Task Run(bool Rules = false)
+        public async Task Run([Summary("Rules", "Show how to play Sequence")]bool rules = false)
         {
-            if (Rules)
+            if (rules)
             {
                 Embed rulesEmbed = new EmbedBuilder()
                     .WithAuthor("Sequence rules", "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png")
