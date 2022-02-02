@@ -15,16 +15,18 @@ namespace Until
         }
     }
 
-    public abstract class Game
+    public class Game
     {
         public ulong ChannelID;
         public List<ulong> Players;
         public EmbedBuilder TempEmbed;
 
-        public Game(ulong channelId)
+        public Game(ulong channelId, ulong userId = 0)
         {
             this.ChannelID = channelId;
             this.Players = new List<ulong>();
+            if (userId != 0)
+                this.Players.Add(userId);
         }
     }
 }

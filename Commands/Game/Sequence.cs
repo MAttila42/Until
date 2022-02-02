@@ -13,7 +13,7 @@ namespace Until.Commands
         public GameService _game { get; set; }
 
         [SlashCommand("sequence", "Start a new game of Sequence")]
-        public async Task Run()
+        public async Task Run(string rules = "rules")
         {
             if (_game.Games.Count(g => g.ChannelID == Context.Channel.Id) != 0)
             {
@@ -21,7 +21,7 @@ namespace Until.Commands
                 return;
             }
 
-            _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id));
+            _game.Games.Add(new Game(Context.Channel.Id, Context.User.Id));
 
             string players = "";
             foreach (ulong id in _game.RunningGame(Context).Players)
@@ -55,6 +55,12 @@ namespace Until.Commands
             await RespondAsync();
         }
 
+        [ComponentInteraction("sequence-play")]
+        public async Task Play()
+        {
+
+        }
+
         [ComponentInteraction("sequence-join")]
         public async Task Join()
         {
@@ -86,6 +92,7 @@ namespace Until.Commands
                 Embed embed = new EmbedBuilder()
                     .WithAuthor("Sequence")
                     .WithDescription("The game has ended.")
+                    .WithColor(new Color(0x5864f2))
                     .Build();
 
                 await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
