@@ -12,8 +12,14 @@ namespace Until.Commands
         public EmbedService _embed { get; set; }
         public GameService _game { get; set; }
 
+        public enum Param
+        {
+            Play,
+            Rules
+        }
+
         [SlashCommand("sequence", "Start a new game of Sequence")]
-        public async Task Run(string rules = "rules")
+        public async Task Run(Param param = Param.Play)
         {
             if (_game.Games.Count(g => g.ChannelID == Context.Channel.Id) != 0)
             {
