@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace Until
@@ -21,9 +22,7 @@ namespace Until
                 this.OwnerID = ulong.Parse(configElement.Element("ownerid").Value);
                 this.EmojiServers = new List<ulong>();
 
-                //XElement emojiServersElement = config.Element("emojiservers");
-                //emojiServersElement
-                //    this.EmojiServers.Add(ulong.Parse(n.Value));
+                configElement.Element("emojiservers").Elements("server").ToList().ForEach(s => this.EmojiServers.Add(ulong.Parse(s.Value)));
             }
         }
 
