@@ -86,7 +86,7 @@ namespace Until
             return Task.CompletedTask;
         }
 
-        private bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
+        public bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
         {
             var permissions = ctx.Guild.GetUser(_client.CurrentUser.Id).GetPermissions(ctx.Guild.GetChannel(ctx.Channel.Id));
             return permissions.ViewChannel && permissions.SendMessages;
