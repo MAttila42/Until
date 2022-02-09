@@ -112,7 +112,7 @@ namespace Until.Commands
         {
             Embed embed = new EmbedBuilder()
                 .WithAuthor("Sequence")
-                .WithDescription($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn ${_client.GetGuild(_config.EmojiServers.First()).Emotes.First()}")
+                .WithDescription($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn")
                 .WithColor(new Color(0x5864f2))
                 .Build();
             MessageComponent components = new ComponentBuilder()
