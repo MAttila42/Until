@@ -4,7 +4,7 @@ namespace Until
     {
         public static void Main()
         {
-            Until bot = new Until(Config.FromXML("config.xml"));
+            Until bot = new Until(new Config("config.xml"));
             bot.MainAsync().GetAwaiter().GetResult();
         }
     }

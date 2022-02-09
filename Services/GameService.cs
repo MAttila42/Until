@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Discord;
 
-namespace Until
+namespace Until.Services
 {
     public class GameService
     {
@@ -15,7 +15,7 @@ namespace Until
         }
     }
 
-    public class Game
+    public abstract class Game
     {
         public ulong ChannelID;
         public List<ulong> Players;

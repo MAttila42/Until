@@ -3,11 +3,14 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Until.Services;
+using Until.Games;
 
 namespace Until.Commands
 {
     public class Sequence : InteractionModuleBase
     {
+        public Config _config { get; set; }
         public DiscordSocketClient _client { get; set; }
         public EmbedService _embed { get; set; }
         public GameService _game { get; set; }
@@ -32,7 +35,7 @@ namespace Until.Commands
                 return;
             }
 
-            _game.Games.Add(new Game(Context.Channel.Id, Context.User.Id));
+            _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id));
 
             string players = "";
             foreach (ulong id in _game.RunningGame(Context).Players)
@@ -109,7 +112,7 @@ namespace Until.Commands
         {
             Embed embed = new EmbedBuilder()
                 .WithAuthor("Sequence")
-                .WithDescription($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn")
+                .WithDescription($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn ${_client.GetGuild(_config.EmojiServers.First()).Emotes.First()}")
                 .WithColor(new Color(0x5864f2))
                 .Build();
             MessageComponent components = new ComponentBuilder()

@@ -1,11 +1,11 @@
 ﻿using Discord;
 
-namespace Until
+namespace Until.Services
 {
     public class EmbedService
     {
-        public string CloseIcon = "https://media.discordapp.net/attachments/932549944705970186/932551072621404200/noun_Close_1984788.png"; // Close by Bismillah from the Noun Project
-        public string InfoIcon = "https://media.discordapp.net/attachments/932549944705970186/934527869785358406/noun-info-2631565.png";
+        public string CloseIcon = "https://media.discordapp.net/attachments/932549944705970186/940878875716632626/noun_Close_1984788.png"; // Close by Bismillah from NounProject.com
+        public string InfoIcon = "https://media.discordapp.net/attachments/932549944705970186/940878880980488192/noun-info-1228105.png"; // Info by David Khai from NounProject.com
 
         public Embed Error(string msg) => new EmbedBuilder()
             .WithAuthor(msg, CloseIcon)
