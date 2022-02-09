@@ -21,8 +21,9 @@ namespace Until
                 this.OwnerID = ulong.Parse(configElement.Element("ownerid").Value);
                 this.EmojiServers = new List<ulong>();
 
-                foreach (XElement n in configElement.Elements("emojiservers"))
-                    this.EmojiServers.Add(ulong.Parse(n.Value));
+                //XElement emojiServersElement = config.Element("emojiservers");
+                //emojiServersElement
+                //    this.EmojiServers.Add(ulong.Parse(n.Value));
             }
         }
 
