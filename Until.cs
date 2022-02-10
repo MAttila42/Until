@@ -30,7 +30,7 @@ namespace Until
             });
             this._interaction = new InteractionService(_client.Rest);
             this._embed = new EmbedService();
-            this._emoji = new EmojiService(_client, _config.EmojiServers);
+            this._emoji = new EmojiService(_config.EmojiServers);
             this._game = new GameService();
 
             this._services = new ServiceCollection()
