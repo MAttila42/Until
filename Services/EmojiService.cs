@@ -10,17 +10,14 @@ namespace Until.Services
 
         public GuildEmote GetEmoji(string name) => this.emojis.Find(e => e.Name == name);
 
-        public EmojiService(List<ulong> emojiServers)
+        public void LoadEmojis(DiscordSocketClient client, List<ulong> emojiServers)
         {
-            DiscordSocketClient client = new DiscordSocketClient(new DiscordSocketConfig()
-            {
-                GatewayIntents = GatewayIntents.All,
-                UseInteractionSnowflakeDate = false
-            });
             this.emojis = new List<GuildEmote>();
             foreach (ulong s in emojiServers)
                 foreach (GuildEmote e in client.GetGuild(s).Emotes)
                     this.emojis.Add(e);
         }
+
+        public EmojiService() { }
     }
 }

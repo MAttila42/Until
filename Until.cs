@@ -30,7 +30,7 @@ namespace Until
             });
             this._interaction = new InteractionService(_client.Rest);
             this._embed = new EmbedService();
-            this._emoji = new EmojiService(_config.EmojiServers);
+            this._emoji = new EmojiService();
             this._game = new GameService();
 
             this._services = new ServiceCollection()
@@ -68,6 +68,7 @@ namespace Until
 
             _client.Ready += async () =>
             {
+                _emoji.LoadEmojis(_client, _config.EmojiServers);
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
                 foreach (SocketGuild g in _client.Guilds)
                     await _interaction.RegisterCommandsToGuildAsync(g.Id);
