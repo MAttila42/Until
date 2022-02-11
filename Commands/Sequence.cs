@@ -16,6 +16,7 @@ namespace Until.Commands
         public GameService _game { get; set; }
 
         [SlashCommand("sequence", "Start a new game of Sequence")]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         public async Task Run([Summary(description: "Show how to play Sequence")]bool rules = false)
         {
             if (rules)

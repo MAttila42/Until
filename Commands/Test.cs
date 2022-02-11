@@ -12,7 +12,6 @@ namespace Until.Commands
 
         [SlashCommand("test", "[DEV] Test something")]
         [DefaultPermission(false)]
-        [RequireOwner]
         public async Task Run()
         {
             if (Context.User.Id != _config.OwnerID)
