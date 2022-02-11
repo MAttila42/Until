@@ -74,8 +74,8 @@ namespace Until
                 foreach (SocketGuild g in _client.Guilds)
                 {
                     await _interaction.RegisterCommandsToGuildAsync(g.Id);
-                    foreach (var c in _interaction.SlashCommands.Where(c => c.Description.StartsWith("[DEV]")))
-                        await _interaction.ModifySlashCommandPermissionsAsync(c, g, new ApplicationCommandPermission(_config.OwnerID, ApplicationCommandPermissionTarget.User, true));
+                    //foreach (var c in _interaction.SlashCommands.Where(c => c.Description.StartsWith("[DEV]")))
+                    //    await _interaction.ModifySlashCommandPermissionsAsync(c, g, new ApplicationCommandPermission(_config.OwnerID, ApplicationCommandPermissionTarget.User, true));
                 }
             };
             _client.JoinedGuild += async (guild) =>
