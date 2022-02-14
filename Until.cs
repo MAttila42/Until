@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+//using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,9 +55,9 @@ namespace Until
             _client.SlashCommandExecuted += async (interaction) =>
             {
                 SocketInteractionContext<SocketSlashCommand> ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
-                //if (!HasPerm(ctx))
-                //    await ctx.Interaction.RespondAsync(embed: _embed.Error("You can't use that command here!"), ephemeral: true);
-                //else
+                if (!HasPerm(ctx))
+                    await ctx.Interaction.RespondAsync(embed: _embed.Error("You can't use that command here!"), ephemeral: true);
+                else
                     await _interaction.ExecuteCommandAsync(ctx, _services);
             };
 
@@ -92,10 +92,10 @@ namespace Until
             return Task.CompletedTask;
         }
 
-        //public bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
-        //{
-        //    var permissions = ctx.Guild.GetUser(_client.CurrentUser.Id).GetPermissions(ctx.Guild.GetChannel(ctx.Channel.Id));
-        //    return permissions.ViewChannel && permissions.SendMessages;
-        //}
+        public bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
+        {
+            var permissions = ctx.Guild.GetUser(_client.CurrentUser.Id).GetPermissions(ctx.Guild.GetChannel(ctx.Channel.Id));
+            return permissions.ViewChannel && permissions.SendMessages;
+        }
     }
 }

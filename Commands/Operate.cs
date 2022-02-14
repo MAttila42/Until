@@ -21,11 +21,11 @@ namespace Until.Commands
         [DefaultPermission(false)]
         public async Task Run(Operation operation = Operation.Restart)
         {
-            if (Context.User.Id != _config.OwnerID)
-            {
-                await RespondAsync(embed: _embed.Error("You can't use that command!"), ephemeral: true);
-                return;
-            }
+            //if (Context.User.Id != _config.OwnerID)
+            //{
+            //    await RespondAsync(embed: _embed.Error("You can't use that command!"), ephemeral: true);
+            //    return;
+            //}
 
             try
             {
