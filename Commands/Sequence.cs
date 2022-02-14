@@ -15,6 +15,11 @@ namespace Until.Commands
         public EmbedService _embed { get; set; }
         public GameService _game { get; set; }
 
+        private ComponentBuilder defaultComponents = new ComponentBuilder()
+            .WithButton("Play", "sequence-play", disabled: true)
+            .WithButton("Join", "sequence-join", ButtonStyle.Success)
+            .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
+
         [SlashCommand("sequence", "Start a new game of Sequence")]
         public async Task Run([Summary(description: "Show how to play Sequence")]bool rules = false)
         {
@@ -29,7 +34,7 @@ namespace Until.Commands
                 return;
             }
 
-            if (_game.Games.Count(g => g.ChannelID == Context.Channel.Id) != 0)
+            if (_game.Games.Count(g => g.ChannelID == Context.Channel.Id) > 0)
             {
                 await RespondAsync(embed: _embed.Error("A game is already being played here!"), ephemeral: true);
                 return;
@@ -48,13 +53,7 @@ namespace Until.Commands
                 .WithColor(new Color(0x5864f2));
             _game.RunningGame(Context).TempEmbed = embed;
 
-            MessageComponent components = new ComponentBuilder()
-                .WithButton("Play", "sequence-play")
-                .WithButton("Join", "sequence-join", style: ButtonStyle.Success)
-                .WithButton("Leave", "sequence-leave", style: ButtonStyle.Danger)
-                .Build();
-
-            await RespondAsync(embed: embed.Build(), components: components);
+            await RespondAsync(embed: embed.Build(), components: defaultComponents.Build());
         }
 
         private async Task UpdatePlayerList(IInteractionContext ctx)
@@ -65,7 +64,25 @@ namespace Until.Commands
 
             _game.RunningGame(ctx).TempEmbed.Fields[0].Value = players;
 
-            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m => m.Embed = _game.RunningGame(ctx).TempEmbed.Build());
+            ComponentBuilder components;
+            if (_game.RunningGame(ctx).Players.Count == 1)
+                components = defaultComponents;
+            else if (_game.RunningGame(ctx).Players.Count == 2)
+                components = new ComponentBuilder()
+                    .WithButton("Play", "sequence-play")
+                    .WithButton("Join", "sequence-join", ButtonStyle.Success)
+                    .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
+            else
+                components = new ComponentBuilder()
+                    .WithButton("Play", "sequence-play")
+                    .WithButton("Join", "sequence-join", ButtonStyle.Success, disabled: true)
+                    .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
+
+            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m =>
+            {
+                m.Embed = _game.RunningGame(ctx).TempEmbed.Build();
+                m.Components = components.Build();
+            });
             await RespondAsync();
         }
 
@@ -73,13 +90,12 @@ namespace Until.Commands
         public async Task Join()
         {
             if (_game.RunningGame(Context).Players.Contains(Context.User.Id))
-            {
                 await RespondAsync(embed: _embed.Error("You are already joined!"), ephemeral: true);
-                return;
+            else
+            {
+                _game.RunningGame(Context).Players.Add(Context.User.Id);
+                await UpdatePlayerList(Context);
             }
-
-            _game.RunningGame(Context).Players.Add(Context.User.Id);
-            await UpdatePlayerList(Context);
         }
 
         [ComponentInteraction("sequence-leave")]

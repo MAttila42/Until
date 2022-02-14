@@ -19,7 +19,7 @@ namespace Until.Commands
 
         [SlashCommand("operate", "[DEV] Operate bot")]
         [DefaultPermission(false)]
-        public async Task Run(Operation operation = Operation.Restart)
+        public async Task Run(Operation operation)
         {
             try
             {
