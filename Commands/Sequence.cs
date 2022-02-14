@@ -13,6 +13,7 @@ namespace Until.Commands
         public Config _config { get; set; }
         public DiscordSocketClient _client { get; set; }
         public EmbedService _embed { get; set; }
+        public EmojiService _emoji { get; set; }
         public GameService _game { get; set; }
 
         private ComponentBuilder defaultComponents = new ComponentBuilder()
@@ -40,7 +41,7 @@ namespace Until.Commands
                 return;
             }
 
-            _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id));
+            _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
 
             string players = "";
             foreach (ulong id in _game.RunningGame(Context).Players)
@@ -128,7 +129,7 @@ namespace Until.Commands
         {
             Embed embed = new EmbedBuilder()
                 .WithAuthor("Sequence")
-                .WithDescription($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn")
+                .AddField($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn", ((SequenceGame)_game.RunningGame(Context)).WriteTable)
                 .WithColor(new Color(0x5864f2))
                 .Build();
             MessageComponent components = new ComponentBuilder()
