@@ -1,5 +1,4 @@
 ﻿using System;
-//using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,12 +71,9 @@ namespace Until
                 _emoji.LoadEmojis(_client, _config.EmojiServers);
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
                 foreach (SocketGuild g in _client.Guilds)
-                {
                     await _interaction.RegisterCommandsToGuildAsync(g.Id);
-                    //foreach (var c in _interaction.SlashCommands.Where(c => c.Description.StartsWith("[DEV]")))
-                    //    await _interaction.ModifySlashCommandPermissionsAsync(c, g, new ApplicationCommandPermission(_config.OwnerID, ApplicationCommandPermissionTarget.User, true));
-                }
             };
+
             _client.JoinedGuild += async (guild) =>
             {
                 await _interaction.RegisterCommandsToGuildAsync(guild.Id);

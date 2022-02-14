@@ -25,19 +25,5 @@ namespace Until
                 configElement.Element("emojiservers").Elements("server").ToList().ForEach(s => this.EmojiServers.Add(ulong.Parse(s.Value)));
             }
         }
-
-        //public static Config FromXML(string path)
-        //{
-        //    Config temp = new Config();
-        //    using (StreamReader stream = File.OpenText(path))
-        //    {
-        //        XDocument config = XDocument.Load(stream);
-        //        XElement configElement = config.Element("config");
-        //        temp.Token = configElement.Element("token").Value;
-        //        temp.OwnerID = ulong.Parse(configElement.Element("ownerid").Value);
-        //        temp.EmojiServers
-        //    }
-        //    return temp;
-        //}
     }
 }
