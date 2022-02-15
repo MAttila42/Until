@@ -9,7 +9,7 @@ namespace Until.Games
     {
         private Table table;
 
-        public string WriteTable => string.Join("", table.Cells.Select(c => c.WriteCell));
+        public string WriteTable => string.Join("", table.Cells.Select(c => c.WriteCell).ToArray());
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId, userId)
         {

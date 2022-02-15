@@ -129,7 +129,7 @@ namespace Until.Commands
         {
             Embed embed = new EmbedBuilder()
                 .WithAuthor("Sequence")
-                .AddField($"{_client.GetUser(_game.RunningGame(Context).Players.First()).Mention}'s turn", ((SequenceGame)_game.RunningGame(Context)).WriteTable)
+                .AddField("XY's turn", ((SequenceGame)_game.RunningGame(Context)).WriteTable)
                 .WithColor(new Color(0x5864f2))
                 .Build();
             MessageComponent components = new ComponentBuilder()
