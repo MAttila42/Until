@@ -127,6 +127,10 @@ namespace Until.Commands
         [ComponentInteraction("sequence-play")]
         public async Task Play()
         {
+            // COLOR SELECTION
+
+
+
             Embed embed = new EmbedBuilder()
                 .WithAuthor("Sequence")
                 .WithDescription($"**XY's turn**\n{((SequenceGame)_game.RunningGame(Context)).Table}")
