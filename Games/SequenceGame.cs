@@ -24,7 +24,7 @@ namespace Until.Games
         public override string ToString()
         {
             string output = "";
-            byte i = 0;
+            byte i = 1;
             foreach (SequenceTableCell c in cells)
             {
                 output += c.Card;
