@@ -7,23 +7,36 @@ namespace Until.Games
 {
     public class SequenceGame : Services.Game
     {
-        private Table table;
+        public SequenceTable Table;
 
-        public string WriteTable => string.Join("", table.Cells.Select(c => c.Card.ToString()).ToArray());
+        //public string WriteTable => string.Join("", table.Cells.Select(c => c.Card.ToString()).ToArray());
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId, userId)
         {
-            this.table = new Table(emojiService);
+            this.Table = new SequenceTable(emojiService);
         }
     }
 
-    class Table
+    public class SequenceTable
     {
-        public List<Cell> Cells;
+        private List<SequenceTableCell> cells;
 
-        public Table(EmojiService emojiService)
+        public override string ToString()
         {
-            this.Cells = new List<Cell>();
+            string output = "";
+            byte i = 0;
+            foreach (SequenceTableCell c in cells)
+            {
+                output += c.Card;
+                if (i++ % 10 == 0)
+                    output += "\n";
+            }
+            return base.ToString();
+        }
+
+        public SequenceTable(EmojiService emojiService)
+        {
+            this.cells = new List<SequenceTableCell>();
 
             string[] tableBase = new string[100]
             {
@@ -69,12 +82,12 @@ namespace Until.Games
                     string c = tableBase[i++];
                     string cf = faces[c[0]];
                     string cs = suits[c[1]];
-                    this.Cells.Add(new Cell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? Chip.Color.Joker : Chip.Color.None));
+                    this.cells.Add(new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? Chip.Color.Joker : Chip.Color.None));
                 }
         }
     }
 
-    class Cell
+    class SequenceTableCell
     {
         public GuildEmote Card;
 
@@ -82,7 +95,7 @@ namespace Until.Games
         private byte y;
         private Chip.Color color;
 
-        public Cell(byte x, byte y, GuildEmote card, Chip.Color color)
+        public SequenceTableCell(byte x, byte y, GuildEmote card, Chip.Color color)
         {
             this.x = x;
             this.y = y;
