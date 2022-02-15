@@ -9,7 +9,7 @@ namespace Until.Games
     {
         private Table table;
 
-        public string WriteTable => string.Join("", table.Cells.Select(c => c.WriteCell).ToArray());
+        public string WriteTable => string.Join("", table.Cells.Select(c => c.Card).ToArray());
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId, userId)
         {
@@ -76,19 +76,17 @@ namespace Until.Games
 
     class Cell
     {
+        public GuildEmote Card;
 
         private byte x;
         private byte y;
-        private GuildEmote card;
         private Chip.Color color;
-
-        public string WriteCell => $"{{{card}}}";
 
         public Cell(byte x, byte y, GuildEmote card, Chip.Color color)
         {
             this.x = x;
             this.y = y;
-            this.card = card;
+            this.Card = card;
             this.color = color;
         }
     }
