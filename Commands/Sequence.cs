@@ -84,7 +84,7 @@ namespace Until.Commands
                 m.Embed = _game.RunningGame(ctx).TempEmbed.Build();
                 m.Components = components.Build();
             });
-            await RespondAsync();
+            await DeferAsync();
         }
 
         [ComponentInteraction("sequence-join")]
