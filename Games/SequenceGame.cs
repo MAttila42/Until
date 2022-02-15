@@ -31,7 +31,7 @@ namespace Until.Games
                 if (i++ % 10 == 0)
                     output += "\n";
             }
-            return base.ToString();
+            return output;
         }
 
         public SequenceTable(EmojiService emojiService)
