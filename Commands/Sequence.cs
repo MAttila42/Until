@@ -157,8 +157,8 @@ namespace Until.Commands
             canvas.Clear(SKColors.Transparent);
 
             byte i = 0;
-            for (int x = 0; x < 1152; x += 128)
-                for (int y = 0; y < 1152; y += 128)
+            for (int x = 0; x <= 1152; x += 128)
+                for (int y = 0; y <= 1152; y += 128)
                     canvas.DrawBitmap(images[i++].Resize(new SKImageInfo(128, 128), SKFilterQuality.Medium), SKRect.Create(x, y, 128, 128));
 
             //foreach (SKBitmap i in images)
@@ -171,8 +171,8 @@ namespace Until.Commands
             attachments.Add(new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "table.png"));
             await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Attachments = attachments; m.Embed = null; m.Components = null; });
 
-            foreach (SKBitmap i in images)
-                i.Dispose();
+            foreach (SKBitmap img in images)
+                img.Dispose();
 
         }
     }
