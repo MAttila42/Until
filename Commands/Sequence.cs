@@ -156,10 +156,10 @@ namespace Until.Commands
             SKCanvas canvas = tempSurface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
-            for (int i = 0; i < images.Count; i++)
-                for (int x = 0; x < 1152; x += 128)
-                    for (int y = 0; y < 1152; y += 128)
-                        canvas.DrawBitmap(images[i].Resize(new SKImageInfo(128, 128), SKFilterQuality.Medium), SKRect.Create(x, y, 128, 128));
+            byte i = 0;
+            for (int x = 0; x < 1152; x += 128)
+                for (int y = 0; y < 1152; y += 128)
+                    canvas.DrawBitmap(images[i++].Resize(new SKImageInfo(128, 128), SKFilterQuality.Medium), SKRect.Create(x, y, 128, 128));
 
             //foreach (SKBitmap i in images)
             //{
