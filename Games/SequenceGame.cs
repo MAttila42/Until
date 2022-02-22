@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Discord;
 using Until.Services;
 
@@ -17,6 +18,8 @@ namespace Until.Games
     public class SequenceTable
     {
         private List<SequenceTableCell> cells;
+
+        public string[] CellURLs => cells.Select(c => c.Card.Url).ToArray();
 
         public override string ToString()
         {

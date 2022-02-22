@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using SkiaSharp;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -131,15 +134,46 @@ namespace Until.Commands
 
 
 
-            Embed embed = new EmbedBuilder()
-                .WithAuthor("Sequence")
-                .WithDescription($"**XY's turn**\n{((SequenceGame)_game.RunningGame(Context)).Table}")
-                .WithColor(new Color(0x5864f2))
-                .Build();
-            MessageComponent components = new ComponentBuilder()
-                .Build();
+            //Embed embed = new EmbedBuilder()
+            //    .WithAuthor("Sequence")
+            //    .WithDescription($"**XY's turn**\n{((SequenceGame)_game.RunningGame(Context)).Table}")
+            //    .WithColor(new Color(0x5864f2))
+            //    .Build();
+            //MessageComponent components = new ComponentBuilder()
+            //    .Build();
 
-            await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = components; });
+            //await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = components; });
+
+
+
+
+
+            List<SKBitmap> images = new List<SKBitmap>();
+            foreach (string u in ((SequenceGame)_game.RunningGame(Context)).Table.CellURLs)
+                images.Add(SKBitmap.Decode(new MemoryStream(await new System.Net.Http.HttpClient().GetByteArrayAsync(u))));
+
+            SKSurface tempSurface = SKSurface.Create(new SKImageInfo(images.Max(i => i.Width), images.Sum(i => i.Height)));
+            SKCanvas canvas = tempSurface.Canvas;
+            canvas.Clear(SKColors.Transparent);
+
+            for (int i = 0; i < images.Count; i++)
+                for (int x = 0; x < 1152; x += 128)
+                    for (int y = 0; y < 1152; y += 128)
+                        canvas.DrawBitmap(images[i].Resize(new SKImageInfo(128, 128), SKFilterQuality.Medium), SKRect.Create(x, y, 128, 128));
+
+            //foreach (SKBitmap i in images)
+            //{
+            //    canvas.DrawBitmap(i, SKRect.Create(offsetX, offsetY, 128, 128));
+            //    offset += i.Height;
+            //}
+
+            List<FileAttachment> attachments = new List<FileAttachment>();
+            attachments.Add(new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "table.png"));
+            await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Attachments = attachments; m.Embed = null; m.Components = null; });
+
+            foreach (SKBitmap i in images)
+                i.Dispose();
+
         }
     }
 }
