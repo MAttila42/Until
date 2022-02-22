@@ -19,7 +19,7 @@ namespace Until.Games
     {
         private List<SequenceTableCell> cells;
 
-        public string[] CellURLs => cells.Select(c => c.Card.Url).ToArray();
+        public string[] CellURLs => cells.OrderBy(c => c.X).OrderBy(c => c.Y).Select(c => c.Card.Url).ToArray();
 
         public override string ToString()
         {
@@ -82,29 +82,29 @@ namespace Until.Games
                     string c = tableBase[i++];
                     string cf = faces[c[0]];
                     string cs = suits[c[1]];
-                    this.cells.Add(new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? Chip.Color.Joker : Chip.Color.None));
+                    this.cells.Add(new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceChip.Color.Joker : SequenceChip.Color.None));
                 }
         }
     }
 
     class SequenceTableCell
     {
+        public byte X;
+        public byte Y;
         public GuildEmote Card;
 
-        private byte x;
-        private byte y;
-        private Chip.Color color;
+        private SequenceChip.Color color;
 
-        public SequenceTableCell(byte x, byte y, GuildEmote card, Chip.Color color)
+        public SequenceTableCell(byte x, byte y, GuildEmote card, SequenceChip.Color color)
         {
-            this.x = x;
-            this.y = y;
+            this.X = x;
+            this.Y = y;
             this.Card = card;
             this.color = color;
         }
     }
 
-    public class Chip
+    public class SequenceChip
     {
         public enum Color
         {
