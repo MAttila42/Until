@@ -19,7 +19,7 @@ namespace Until.Games
     {
         private List<SequenceTableCell> cells;
 
-        public string[] CellURLs => cells.OrderBy(c => c.X).OrderBy(c => c.Y).Select(c => c.Card.Url).ToArray();
+        public string[] CellURLs => cells.Select(c => c.Card.Url).ToArray();
 
         public override string ToString()
         {
