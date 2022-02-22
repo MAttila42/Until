@@ -152,7 +152,7 @@ namespace Until.Commands
             foreach (string u in ((SequenceGame)_game.RunningGame(Context)).Table.CellURLs)
                 images.Add(SKBitmap.Decode(new MemoryStream(await new System.Net.Http.HttpClient().GetByteArrayAsync(u))));
 
-            SKSurface tempSurface = SKSurface.Create(new SKImageInfo(images.Max(i => i.Width), images.Sum(i => i.Height)));
+            SKSurface tempSurface = SKSurface.Create(new SKImageInfo(1280, 1280));
             SKCanvas canvas = tempSurface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
