@@ -42,7 +42,7 @@ namespace Until.Commands
                 offset += i.Height;
             }
 
-            FileAttachment file = new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "asd");
+            FileAttachment file = new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "table.png");
             await Context.Channel.SendFileAsync(file);
 
             foreach (SKBitmap i in images)
