@@ -68,7 +68,7 @@ namespace Until
 
             _client.Ready += async () =>
             {
-                _emoji.LoadEmojis(_client, _config.EmojiServers);
+                await _emoji.LoadEmojis(_client, _config.EmojiServers);
                 await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
                 foreach (SocketGuild g in _client.Guilds)
                     await _interaction.RegisterCommandsToGuildAsync(g.Id);
