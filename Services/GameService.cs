@@ -18,15 +18,23 @@ namespace Until.Services
     public abstract class Game
     {
         public ulong ChannelID;
-        public List<ulong> Players;
+        public List<Player> Players;
         public EmbedBuilder TempEmbed;
 
-        public Game(ulong channelId, ulong userId = 0)
+        public Game(ulong channelId)
         {
             this.ChannelID = channelId;
-            this.Players = new List<ulong>();
-            if (userId != 0)
-                this.Players.Add(userId);
+            this.Players = new List<Player>();
+        }
+    }
+
+    public abstract class Player
+    {
+        public ulong ID;
+
+        public Player(ulong userId)
+        {
+            this.ID = userId;
         }
     }
 }

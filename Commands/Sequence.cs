@@ -18,7 +18,7 @@ namespace Until.Commands
         public GameService _game { get; set; }
 
         private ComponentBuilder defaultComponents = new ComponentBuilder()
-            .WithButton("Play", "sequence-play", disabled: true)
+            .WithButton("Play", "sequence-colorselection", disabled: true)
             .WithButton("Join", "sequence-join", ButtonStyle.Success)
             .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
 
@@ -45,7 +45,7 @@ namespace Until.Commands
             _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
 
             string players = "";
-            foreach (ulong id in _game.RunningGame(Context).Players)
+            foreach (ulong id in _game.RunningGame(Context).Players.Select(p => p.ID))
                 players += $"{_client.GetUser(id).Mention}\n";
 
             EmbedBuilder embed = new EmbedBuilder()
@@ -61,7 +61,7 @@ namespace Until.Commands
         private async Task UpdatePlayerList(IInteractionContext ctx)
         {
             string players = "";
-            foreach (ulong id in _game.RunningGame(ctx).Players)
+            foreach (ulong id in _game.RunningGame(ctx).Players.Select(p => p.ID))
                 players += $"{_client.GetUser(id).Mention}\n";
 
             _game.RunningGame(ctx).TempEmbed.Fields[0].Value = players;
@@ -71,12 +71,12 @@ namespace Until.Commands
                 components = defaultComponents;
             else if (_game.RunningGame(ctx).Players.Count == 2)
                 components = new ComponentBuilder()
-                    .WithButton("Play", "sequence-play")
+                    .WithButton("Play", "sequence-colorselection")
                     .WithButton("Join", "sequence-join", ButtonStyle.Success)
                     .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
             else
                 components = new ComponentBuilder()
-                    .WithButton("Play", "sequence-play")
+                    .WithButton("Play", "sequence-colorselection")
                     .WithButton("Join", "sequence-join", ButtonStyle.Success, disabled: true)
                     .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
 
@@ -91,11 +91,11 @@ namespace Until.Commands
         [ComponentInteraction("sequence-join")]
         public async Task Join()
         {
-            if (_game.RunningGame(Context).Players.Contains(Context.User.Id))
+            if (_game.RunningGame(Context).Players.Select(p => p.ID).Contains(Context.User.Id))
                 await RespondAsync(embed: _embed.Error("You are already joined!"), ephemeral: true);
             else
             {
-                _game.RunningGame(Context).Players.Add(Context.User.Id);
+                _game.RunningGame(Context).Players.Add(new SequencePlayer(Context.User.Id));
                 await UpdatePlayerList(Context);
             }
         }
@@ -103,13 +103,13 @@ namespace Until.Commands
         [ComponentInteraction("sequence-leave")]
         public async Task Leave()
         {
-            if (!_game.RunningGame(Context).Players.Contains(Context.User.Id))
+            if (!_game.RunningGame(Context).Players.Select(p => p.ID).Contains(Context.User.Id))
             {
                 await RespondAsync(embed: _embed.Error("You aren't joined!"), ephemeral: true);
                 return;
             }
 
-            _game.RunningGame(Context).Players.Remove(Context.User.Id);
+            _game.RunningGame(Context).Players.RemoveAll(p => p.ID == Context.User.Id);
             if (_game.RunningGame(Context).Players.Count > 0)
                 await UpdatePlayerList(Context);
             else
@@ -123,6 +123,12 @@ namespace Until.Commands
 
                 await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
             }
+        }
+
+        [ComponentInteraction("sequence-colorselection")]
+        public async Task ColorSelection()
+        {
+
         }
 
         [ComponentInteraction("sequence-play")]

@@ -9,10 +9,16 @@ namespace Until.Games
     {
         public SequenceTable Table;
 
-        public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId, userId)
+        public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
         {
+            this.Players.Add(new SequencePlayer(userId));
             this.Table = new SequenceTable(emojiService);
         }
+    }
+
+    public class SequencePlayer : Player
+    {
+        public SequencePlayer(ulong userId) : base(userId) { }
     }
 
     public class SequenceTable
