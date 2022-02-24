@@ -7,6 +7,15 @@ namespace Until.Games
 {
     public class SequenceGame : Services.Game
     {
+        public enum Color
+        {
+            None,
+            Red,
+            Green,
+            Blue,
+            Joker
+        }
+
         public SequenceTable Table;
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
@@ -18,19 +27,11 @@ namespace Until.Games
 
     public class SequencePlayer : Player
     {
-        public enum Color
-        {
-            None,
-            Red,
-            Green,
-            Blue
-        }
-
-        private Color color;
+        private SequenceGame.Color color;
 
         public SequencePlayer(ulong userId) : base(userId)
         {
-            this.color = Color.None;
+            this.color = SequenceGame.Color.None;
         }
     }
 
@@ -100,7 +101,7 @@ namespace Until.Games
                     string c = tableBase[i++];
                     string cf = faces[c[0]];
                     string cs = suits[c[1]];
-                    this.cells.Add(new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceChip.Color.Joker : SequenceChip.Color.None));
+                    this.cells.Add(new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None));
                 }
         }
     }
@@ -111,26 +112,14 @@ namespace Until.Games
         public byte Y;
         public GuildEmote Card;
 
-        private SequenceChip.Color color;
+        private SequenceGame.Color color;
 
-        public SequenceTableCell(byte x, byte y, GuildEmote card, SequenceChip.Color color)
+        public SequenceTableCell(byte x, byte y, GuildEmote card, SequenceGame.Color color)
         {
             this.X = x;
             this.Y = y;
             this.Card = card;
             this.color = color;
-        }
-    }
-
-    public class SequenceChip
-    {
-        public enum Color
-        {
-            None,
-            Red,
-            Green,
-            Blue,
-            Joker
         }
     }
 }
