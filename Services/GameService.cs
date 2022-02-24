@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Discord;
 
 namespace Until.Services
@@ -7,7 +8,18 @@ namespace Until.Services
     {
         public List<Game> Games;
 
-        public Game RunningGame(IInteractionContext ctx) => this.Games[this.Games.IndexOf(this.Games.Find(g => g.ChannelID == ctx.Channel.Id))];
+        public Game WaitingGame(IInteractionContext ctx)
+        {
+            List<Game> games = this.Games.Where(g => g.ChannelID == ctx.Channel.Id).ToList();
+            if (games.Count() > 1)
+            {
+                this.Games.RemoveAll(g => g.ChannelID == ctx.Channel.Id && g.Players.Count(p => p.ID == ctx.User.Id) == 1);
+                games.ForEach(g => this.Games.Add(g));
+            }
+            return games.Last();
+        }
+
+        public Game RunningGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
 
         public GameService()
         {
