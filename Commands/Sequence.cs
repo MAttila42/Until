@@ -79,7 +79,7 @@ namespace Until.Commands
             if (modify)
                 await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m =>
                 {
-                    m.Embed = _game.RunningGame(ctx).TempEmbed.Build();
+                    m.Embed = embed.Build();
                     m.Components = components.Build();
                 });
             else
