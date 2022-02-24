@@ -18,7 +18,20 @@ namespace Until.Games
 
     public class SequencePlayer : Player
     {
-        public SequencePlayer(ulong userId) : base(userId) { }
+        public enum Color
+        {
+            None,
+            Red,
+            Green,
+            Blue
+        }
+
+        private Color color;
+
+        public SequencePlayer(ulong userId) : base(userId)
+        {
+            this.color = Color.None;
+        }
     }
 
     public class SequenceTable
@@ -36,7 +49,7 @@ namespace Until.Games
                 for (byte x = 0; x < 10; x++)
                     canvas.DrawBitmap(emojiService.GetImage(cells[i++].Card.Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
 
-            return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "table.png");
+            return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Sequence.png");
         }
 
         public SequenceTable(EmojiService emojiService)
