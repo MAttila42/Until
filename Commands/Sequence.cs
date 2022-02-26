@@ -48,6 +48,8 @@ namespace Until.Commands
         private async Task UpdateResponse(IInteractionContext ctx, bool respond)
         {
             SequenceGame game = _game.RunningGame(ctx) as SequenceGame;
+            if (game.Players.Count == 1 && !respond)
+                game = _game.WaitingGame(ctx) as SequenceGame;
 
             Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>();
             colors.Add(SequenceGame.Color.None, "black");
@@ -97,19 +99,17 @@ namespace Until.Commands
         [ComponentInteraction("sequence-leave")]
         public async Task Leave()
         {
-            if (!_game.RunningGame(Context).Players.Select(p => p.ID).ToList().Contains(Context.User.Id))
+            if (!_game.WaitingGame(Context).Players.Select(p => p.ID).ToList().Contains(Context.User.Id))
             {
                 await RespondAsync(embed: _embed.Error("You aren't joined!"), ephemeral: true);
                 return;
             }
 
-            //_game.RunningGame(Context).Players.RemoveAll(p => p.ID == Context.User.Id);
-            _game.Games[_game.Games.IndexOf(_game.Games.Find(g => g.ChannelID == Context.Channel.Id && g.Players.Any(p => p.ID == Context.User.Id)))].Players.RemoveAll(p => p.ID == Context.User.Id);
-            var a = _game.RunningGame(Context);
-            var b = a.Players;
-            var asd = b.Count;
-            if (asd > 0)
+            if (_game.RunningGame(Context).Players.Count > 1)
+            {
+                _game.RunningGame(Context).Players.RemoveAll(p => p.ID == Context.User.Id);
                 await UpdateResponse(Context);
+            }
             else
             {
                 _game.Games.Remove(_game.RunningGame(Context));

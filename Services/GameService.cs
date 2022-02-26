@@ -10,11 +10,7 @@ namespace Until.Services
         public List<Game> Games;
 
         public Game WaitingGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
-        public Game RunningGame(IInteractionContext ctx)
-        {
-            var a = this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
-            return a;
-        }
+        public Game RunningGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
 
         public GameService()
         {
