@@ -32,7 +32,7 @@ namespace Until.Commands
                 return;
             }
 
-            if (_game.Games.Where(g => g.Players.Any(p => p.ID == Context.User.Id)).Any(g => g.ChannelID == Context.Channel.Id))
+            if (_game.Games.Any(g => g.ChannelID == Context.Channel.Id && g.Players.Any(p => p.ID == Context.User.Id)))
             {
                 ComponentBuilder components = new ComponentBuilder()
                     .WithButton("Leave Game", "sequence-leavegame", ButtonStyle.Danger);
@@ -79,17 +79,16 @@ namespace Until.Commands
                     m.Embed = embed.Build();
                     m.Components = components.Build();
                 });
-
         }
 
         [ComponentInteraction("sequence-join")]
         public async Task Join()
         {
-            if (_game.RunningGame(Context).Players.Any(p => p.ID == Context.User.Id))
+            if (_game.WaitingGame(Context).Players.Any(p => p.ID == Context.User.Id))
                 await RespondAsync(embed: _embed.Error("You are already joined!"), ephemeral: true);
             else
             {
-                _game.RunningGame(Context).Players.Add(new SequencePlayer(Context.User.Id));
+                _game.WaitingGame(Context).Players.Add(new SequencePlayer(Context.User.Id));
                 await UpdateResponse(Context);
                 await DeferAsync();
             }
@@ -98,14 +97,18 @@ namespace Until.Commands
         [ComponentInteraction("sequence-leave")]
         public async Task Leave()
         {
-            if (!_game.RunningGame(Context).Players.Select(p => p.ID).Contains(Context.User.Id))
+            if (!_game.RunningGame(Context).Players.Select(p => p.ID).ToList().Contains(Context.User.Id))
             {
                 await RespondAsync(embed: _embed.Error("You aren't joined!"), ephemeral: true);
                 return;
             }
 
-            _game.RunningGame(Context).Players.RemoveAll(p => p.ID == Context.User.Id);
-            if (_game.RunningGame(Context).Players.Count > 0)
+            //_game.RunningGame(Context).Players.RemoveAll(p => p.ID == Context.User.Id);
+            _game.Games[_game.Games.IndexOf(_game.Games.Find(g => g.ChannelID == Context.Channel.Id && g.Players.Any(p => p.ID == Context.User.Id)))].Players.RemoveAll(p => p.ID == Context.User.Id);
+            var a = _game.RunningGame(Context);
+            var b = a.Players;
+            var asd = b.Count;
+            if (asd > 0)
                 await UpdateResponse(Context);
             else
             {

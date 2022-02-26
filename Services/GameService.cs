@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Discord;
 
 namespace Until.Services
@@ -8,18 +9,12 @@ namespace Until.Services
     {
         public List<Game> Games;
 
-        public Game WaitingGame(IInteractionContext ctx)
+        public Game WaitingGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
+        public Game RunningGame(IInteractionContext ctx)
         {
-            List<Game> games = this.Games.Where(g => g.ChannelID == ctx.Channel.Id).ToList();
-            if (games.Count() > 1)
-            {
-                this.Games.RemoveAll(g => g.ChannelID == ctx.Channel.Id && g.Players.Count(p => p.ID == ctx.User.Id) == 1);
-                games.ForEach(g => this.Games.Add(g));
-            }
-            return games.Last();
+            var a = this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
+            return a;
         }
-
-        public Game RunningGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
 
         public GameService()
         {

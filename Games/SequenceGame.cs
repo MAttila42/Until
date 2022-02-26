@@ -37,7 +37,7 @@ namespace Until.Games
 
     public class SequenceTable
     {
-        private List<SequenceTableCell> cells;
+        private SequenceTableCell[,] cells;
 
         public FileAttachment ToImage(EmojiService emojiService)
         {
@@ -45,17 +45,16 @@ namespace Until.Games
             SKCanvas canvas = tempSurface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
-            byte i = 0;
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
-                    canvas.DrawBitmap(emojiService.GetImage(cells[i++].Card.Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
+                    canvas.DrawBitmap(emojiService.GetImage(cells[x, y].Card.Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
 
             return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Sequence.png");
         }
 
         public SequenceTable(EmojiService emojiService)
         {
-            this.cells = new List<SequenceTableCell>();
+            this.cells = new SequenceTableCell[10, 10];
 
             string[] tableBase = new string[100]
             {
@@ -95,13 +94,13 @@ namespace Until.Games
             suits.Add('X', "");
 
             byte i = 0;
-            for (byte x = 0; x < 10; x++)
-                for (byte y = 0; y < 10; y++)
+            for (byte y = 0; y < 10; y++)
+                for (byte x = 0; x < 10; x++)
                 {
                     string c = tableBase[i++];
                     string cf = faces[c[0]];
                     string cs = suits[c[1]];
-                    this.cells.Add(new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None));
+                    this.cells[x, y] = new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
                 }
         }
     }
