@@ -41,15 +41,14 @@ namespace Until.Commands
             }
 
             _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
-            await UpdateResponse(Context, true);
+            await UpdateWaitingMenu(Context, true, false);
         }
 
-        private async Task UpdateResponse(IInteractionContext ctx) => await UpdateResponse(ctx, false); 
-        private async Task UpdateResponse(IInteractionContext ctx, bool respond)
+        private async Task UpdateWaitingMenu(IInteractionContext ctx, bool respond, bool remove)
         {
             SequenceGame game = _game.RunningGame(ctx) as SequenceGame;
-            if (game.Players.Count == 1 && !respond)
-                game = _game.WaitingGame(ctx) as SequenceGame;
+            if (remove)
+                game.Players.RemoveAll(p => p.ID == Context.User.Id);
 
             Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>();
             colors.Add(SequenceGame.Color.None, "black");
@@ -69,7 +68,7 @@ namespace Until.Commands
                 .WithColor(new Color(0x5864f2));
 
             ComponentBuilder components = new ComponentBuilder()
-                .WithButton("Play", "sequence-start", disabled: game.Players.Count == 1)
+                .WithButton("Play", "sequence-colorselection", disabled: game.Players.Count == 1)
                 .WithButton("Join", "sequence-join", ButtonStyle.Success, disabled: game.Players.Count == 3)
                 .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
 
@@ -91,7 +90,7 @@ namespace Until.Commands
             else
             {
                 _game.WaitingGame(Context).Players.Add(new SequencePlayer(Context.User.Id));
-                await UpdateResponse(Context);
+                await UpdateWaitingMenu(Context, false, false);
                 await DeferAsync();
             }
         }
@@ -107,8 +106,8 @@ namespace Until.Commands
 
             if (_game.RunningGame(Context).Players.Count > 1)
             {
-                _game.RunningGame(Context).Players.RemoveAll(p => p.ID == Context.User.Id);
-                await UpdateResponse(Context);
+                await UpdateWaitingMenu(Context, false, true);
+                await DeferAsync();
             }
             else
             {
@@ -127,7 +126,7 @@ namespace Until.Commands
         public async Task LeaveGame()
         {
             _game.Games.Remove(_game.RunningGame(Context));
-            await RespondAsync(embed: _embed.Info("You've been removed from the game."));
+            await RespondAsync(embed: _embed.Info("You've been removed from the game."), ephemeral: true);
         }
 
         [ComponentInteraction("sequence-colorselection")]
