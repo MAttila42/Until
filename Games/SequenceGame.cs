@@ -16,18 +16,42 @@ namespace Until.Games
             Joker
         }
 
+        public enum Status
+        {
+            Init,
+            Remove,
+            Join,
+            Color
+        }
+
         public SequenceTable Table;
+        public Status GameStatus;
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
         {
             this.Players.Add(new SequencePlayer(userId));
             this.Table = new SequenceTable(emojiService);
+            this.GameStatus = Status.Init;
         }
     }
 
     public class SequencePlayer : Player
     {
         private SequenceGame.Color color;
+
+        public string ColorEmoji
+        {
+            get
+            {
+                Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>();
+                colors.Add(SequenceGame.Color.None, "black");
+                colors.Add(SequenceGame.Color.Red, "red");
+                colors.Add(SequenceGame.Color.Green, "green");
+                colors.Add(SequenceGame.Color.Blue, "blue");
+                colors.Add(SequenceGame.Color.Joker, "black");
+                return $":{colors[this.color]}_circle:";
+            }
+        }
 
         public SequencePlayer(ulong userId) : base(userId)
         {

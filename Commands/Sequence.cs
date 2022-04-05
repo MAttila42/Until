@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,38 +42,44 @@ namespace Until.Commands
             }
 
             _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
-            await UpdateWaitingMenu(Context, true, false);
+            await UpdateGame(Context);
         }
 
-        private async Task UpdateWaitingMenu(IInteractionContext ctx, bool respond, bool remove)
+        private async Task UpdateGame(IInteractionContext ctx)
         {
             SequenceGame game = _game.RunningGame(ctx) as SequenceGame;
-            if (remove)
+            if (game.GameStatus == SequenceGame.Status.Remove)
                 game.Players.RemoveAll(p => p.ID == Context.User.Id);
 
-            Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>();
-            colors.Add(SequenceGame.Color.None, "black");
-            colors.Add(SequenceGame.Color.Red, "red");
-            colors.Add(SequenceGame.Color.Green, "green");
-            colors.Add(SequenceGame.Color.Blue, "blue");
-            colors.Add(SequenceGame.Color.Joker, "black");
-
             StringBuilder players = new StringBuilder();
-            foreach (ulong id in game.Players.Select(p => p.ID))
-                players.Append($":black_circle: {_client.GetUser(id).Mention}\n");
+            foreach (SequencePlayer p in game.Players)
+                players.Append($"{p.ColorEmoji} {_client.GetUser(p.ID).Mention}\n");
+
 
             EmbedBuilder embed = new EmbedBuilder()
                 .WithAuthor("Sequence")
-                .WithDescription("A game of Sequence has started. Join to play the game")
                 .AddField("Players:", players)
                 .WithColor(new Color(0x5864f2));
+            if (game.GameStatus == SequenceGame.Status.Init ||
+                game.GameStatus == SequenceGame.Status.Join)
+                embed.WithDescription("A game of Sequence has started. Join to play the game!");
+            else if (game.GameStatus == SequenceGame.Status.Color)
+                embed.WithDescription("Players, select your colors in which you will play!");
 
-            ComponentBuilder components = new ComponentBuilder()
-                .WithButton("Play", "sequence-colorselection", disabled: game.Players.Count == 1)
-                .WithButton("Join", "sequence-join", ButtonStyle.Success, disabled: game.Players.Count == 3)
-                .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
+            ComponentBuilder components = null;
+            if (game.GameStatus != SequenceGame.Status.Color)
+                components = new ComponentBuilder()
+                    .WithButton("Play", "sequence-colorselection", disabled: game.Players.Count == 1)
+                    .WithButton("Join", "sequence-join", ButtonStyle.Success, disabled: game.Players.Count == 3)
+                    .WithButton("Leave", "sequence-leave", ButtonStyle.Danger);
+            else
+                components = new ComponentBuilder()
+                    .WithButton("Red", "sequence-selectred", ButtonStyle.Danger, disabled: game.Players.Count == 1)
+                    .WithButton("Green", "sequence-selectgreen", ButtonStyle.Success, disabled: game.Players.Count == 3)
+                    .WithButton("Blue", "sequence-selectblue")
+                    .WithButton("Random", "sequence-selectrandomcolor", ButtonStyle.Secondary, disabled: true);
 
-            if (respond)
+            if (game.GameStatus == SequenceGame.Status.Init)
                 await ctx.Interaction.RespondAsync(embed: embed.Build(), components: components.Build());
             else
                 await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m =>
@@ -89,8 +96,10 @@ namespace Until.Commands
                 await RespondAsync(embed: _embed.Error("You are already joined!"), ephemeral: true);
             else
             {
-                _game.WaitingGame(Context).Players.Add(new SequencePlayer(Context.User.Id));
-                await UpdateWaitingMenu(Context, false, false);
+                SequenceGame game = _game.WaitingGame(Context) as SequenceGame;
+                game.Players.Add(new SequencePlayer(Context.User.Id));
+                game.GameStatus = SequenceGame.Status.Join;
+                await UpdateGame(Context);
                 await DeferAsync();
             }
         }
@@ -104,9 +113,11 @@ namespace Until.Commands
                 return;
             }
 
-            if (_game.RunningGame(Context).Players.Count > 1)
+            SequenceGame game = _game.RunningGame(Context) as SequenceGame;
+            if (game.Players.Count > 1)
             {
-                await UpdateWaitingMenu(Context, false, true);
+                game.GameStatus = SequenceGame.Status.Remove;
+                await UpdateGame(Context);
                 await DeferAsync();
             }
             else
@@ -132,7 +143,19 @@ namespace Until.Commands
         [ComponentInteraction("sequence-colorselection")]
         public async Task ColorSelection()
         {
+            SequenceGame game = null;
+            try
+            {
+                game = _game.RunningGame(Context) as SequenceGame;
+            }
+            catch (Exception)
+            {
+                await RespondAsync(embed: _embed.Error("You're not in a game!"));
+                return;
+            }
 
+            game.GameStatus = SequenceGame.Status.Color;
+            await UpdateGame(Context);
         }
 
         [ComponentInteraction("sequence-start")]
