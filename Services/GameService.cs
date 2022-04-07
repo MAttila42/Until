@@ -22,7 +22,6 @@ namespace Until.Services
     {
         public ulong ChannelID;
         public List<Player> Players;
-        public EmbedBuilder TempEmbed;
 
         public Game(ulong channelId)
         {

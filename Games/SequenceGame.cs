@@ -37,25 +37,25 @@ namespace Until.Games
 
     public class SequencePlayer : Player
     {
-        private SequenceGame.Color color;
+        public SequenceGame.Color Color;
 
         public string ColorEmoji
         {
             get
             {
                 Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>();
-                colors.Add(SequenceGame.Color.None, "black");
-                colors.Add(SequenceGame.Color.Red, "red");
-                colors.Add(SequenceGame.Color.Green, "green");
-                colors.Add(SequenceGame.Color.Blue, "blue");
-                colors.Add(SequenceGame.Color.Joker, "black");
-                return $":{colors[this.color]}_circle:";
+                colors.Add(SequenceGame.Color.None, ":black_circle:");
+                colors.Add(SequenceGame.Color.Red, ":red_circle:");
+                colors.Add(SequenceGame.Color.Green, ":green_circle:");
+                colors.Add(SequenceGame.Color.Blue, ":blue_circle:");
+                colors.Add(SequenceGame.Color.Joker, ":grey_question:");
+                return colors[this.Color];
             }
         }
 
         public SequencePlayer(ulong userId) : base(userId)
         {
-            this.color = SequenceGame.Color.None;
+            this.Color = SequenceGame.Color.None;
         }
     }
 
@@ -63,7 +63,7 @@ namespace Until.Games
     {
         private SequenceTableCell[,] cells;
 
-        public FileAttachment ToImage(EmojiService emojiService)
+        public FileAttachment ToImage(in EmojiService emojiService)
         {
             SKSurface tempSurface = SKSurface.Create(new SKImageInfo(640, 766));
             SKCanvas canvas = tempSurface.Canvas;

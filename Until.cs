@@ -23,7 +23,7 @@ namespace Until
         public Until(Config config)
         {
             this._config = config;
-            this._client = new DiscordSocketClient(new DiscordSocketConfig()
+            this._client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.All,
                 UseInteractionSnowflakeDate = false
@@ -54,10 +54,7 @@ namespace Until
             _client.SlashCommandExecuted += async (interaction) =>
             {
                 SocketInteractionContext<SocketSlashCommand> ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
-                if (!HasPerm(ctx))
-                    await ctx.Interaction.RespondAsync(embed: _embed.Error("You can't use that command here!"), ephemeral: true);
-                else
-                    await _interaction.ExecuteCommandAsync(ctx, _services);
+                await _interaction.ExecuteCommandAsync(ctx, _services);
             };
 
             _client.ButtonExecuted += async (interaction) =>
@@ -86,12 +83,6 @@ namespace Until
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
-        }
-
-        public bool HasPerm(SocketInteractionContext<SocketSlashCommand> ctx)
-        {
-            var permissions = ctx.Guild.GetUser(_client.CurrentUser.Id).GetPermissions(ctx.Guild.GetChannel(ctx.Channel.Id));
-            return permissions.ViewChannel && permissions.SendMessages;
         }
     }
 }

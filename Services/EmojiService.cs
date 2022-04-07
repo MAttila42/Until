@@ -15,9 +15,9 @@ namespace Until.Services
         private Dictionary<string, SKBitmap> images;
 
         public GuildEmote GetEmoji(string name) => this.emojis.First(e => e.Name == name);
-        public SKBitmap GetImage(string name) => this.images[name];
+        public SKBitmap GetImage(in string name) => this.images[name];
 
-        private void Log(string msg) => Console.WriteLine($"{DateTime.Now:T} {"Service", -12}{msg}");
+        private void Log(in string msg) => Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} {"Service", -12}{msg}");
 
         public async Task LoadEmojis(DiscordSocketClient client, List<ulong> emojiServers)
         {
