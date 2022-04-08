@@ -21,7 +21,8 @@ namespace Until.Games
             Init,
             Remove,
             Join,
-            Color
+            Color,
+            Start
         }
 
         public SequenceTable Table;
@@ -93,29 +94,32 @@ namespace Until.Games
                 "AC", "7S", "6S", "5S", "4S", "3S", "2S", "2H", "3H", "5D", 
                 "XX", "AD", "KD", "QD", "TD", "9D", "8D", "7D", "6D", "XX"
             };
-
-            Dictionary<char, string> faces = new Dictionary<char, string>();
-            faces.Add('A', "ace");
-            faces.Add('2', "two");
-            faces.Add('3', "three");
-            faces.Add('4', "four");
-            faces.Add('5', "five");
-            faces.Add('6', "six");
-            faces.Add('7', "seven");
-            faces.Add('8', "eight");
-            faces.Add('9', "nine");
-            faces.Add('T', "ten");
-            faces.Add('J', "jack");
-            faces.Add('Q', "queen");
-            faces.Add('K', "king");
-            faces.Add('X', "joker");
-
-            Dictionary<char, string> suits = new Dictionary<char, string>();
-            suits.Add('C', "_of_clubs");
-            suits.Add('S', "_of_spades");
-            suits.Add('H', "_of_hearts");
-            suits.Add('D', "_of_diamonds");
-            suits.Add('X', "");
+            
+            Dictionary<char, string> faces = new Dictionary<char, string>()
+            {
+                { 'A', "ace" },
+                { '2', "two" },
+                { '3', "three" },
+                { '4', "four" },
+                { '5', "five" },
+                { '6', "six" },
+                { '7', "seven" },
+                { '8', "eight" },
+                { '9', "nine" },
+                { 'T', "ten" },
+                { 'J', "jack" },
+                { 'Q', "queen" },
+                { 'K', "king" },
+                { 'X', "joker" }
+            };
+            Dictionary<char, string> suits = new Dictionary<char, string>()
+            {
+                { 'C', "_of_clubs" },
+                { 'S', "_of_spades" },
+                { 'H', "_of_hearts" },
+                { 'D', "_of_diamonds" },
+                { 'X', "" }
+            };
 
             byte i = 0;
             for (byte y = 0; y < 10; y++)
