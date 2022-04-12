@@ -27,12 +27,24 @@ namespace Until.Commands
             { "random", SequenceGame.Color.Joker }
         };
 
-        private async Task UpdateGame(IInteractionContext ctx)
+        private async Task Update(IInteractionContext ctx)
         {
             SequenceGame game = _game.RunningGame(ctx) as SequenceGame;
             if (game.GameStatus == SequenceGame.Status.Remove)
                 game.Players.RemoveAll(p => p.ID == Context.User.Id);
 
+            if (game.GameStatus == SequenceGame.Status.Init ||
+                game.GameStatus == SequenceGame.Status.Remove ||
+                game.GameStatus == SequenceGame.Status.Join ||
+                game.GameStatus == SequenceGame.Status.Color ||
+                game.GameStatus == SequenceGame.Status.Start)
+                await UpdateMenu(ctx, game);
+            else
+                await UpdateGame(ctx, game);
+        }
+
+        private async Task UpdateMenu(IInteractionContext ctx, SequenceGame game)
+        {
             StringBuilder players = new StringBuilder();
             foreach (SequencePlayer p in game.Players)
                 players.Append($"{p.ColorEmoji} {_client.GetUser(p.ID).Mention}\n");
@@ -53,14 +65,14 @@ namespace Until.Commands
                 byte i = 0;
                 components = new ComponentBuilder();
                 embed.WithDescription("Players, select your colors in which you will play!");
-                ButtonStyle[] styles = new ButtonStyle[4]
+                ButtonStyle[] styles = new ButtonStyle[3]
                 {
                     ButtonStyle.Danger,
                     ButtonStyle.Success,
-                    ButtonStyle.Primary,
-                    ButtonStyle.Secondary
+                    ButtonStyle.Primary
+                    //ButtonStyle.Secondary
                 };
-                foreach (var c in colors)
+                foreach (var c in colors.Take(3))
                 {
                     components.WithButton(c.Key[0].ToString().ToUpper() + c.Key.Substring(1), $"sequence-select{c.Key}", styles[i++], disabled: game.Players.Any(p => ((SequencePlayer)p).Color == c.Value) || game.GameStatus == SequenceGame.Status.Start);
                 }
@@ -79,7 +91,13 @@ namespace Until.Commands
             }
 
             if (game.GameStatus == SequenceGame.Status.Start)
-                await Start(ctx);
+                await UpdateGame(ctx, game);
+        }
+
+        private async Task UpdateGame(IInteractionContext ctx, SequenceGame game)
+        {
+            List <FileAttachment> attachments = new List<FileAttachment>() { ((SequenceGame)_game.RunningGame(Context)).Table.ToImage(_emoji) };
+            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Attachments = attachments; m.Embed = null; m.Components = null; });
         }
 
         [SlashCommand("sequence", "Start a new game of Sequence")]
@@ -105,7 +123,7 @@ namespace Until.Commands
             }
 
             _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
-            await UpdateGame(Context);
+            await Update(Context);
         }
 
         [ComponentInteraction("sequence-join")]
@@ -118,7 +136,7 @@ namespace Until.Commands
                 SequenceGame game = _game.WaitingGame(Context) as SequenceGame;
                 game.Players.Add(new SequencePlayer(Context.User.Id));
                 game.GameStatus = SequenceGame.Status.Join;
-                await UpdateGame(Context);
+                await Update(Context);
             }
         }
 
@@ -135,13 +153,12 @@ namespace Until.Commands
             if (game.Players.Count > 1)
             {
                 game.GameStatus = SequenceGame.Status.Remove;
-                await UpdateGame(Context);
+                await Update(Context);
             }
             else
             {
                 _game.Games.Remove(_game.RunningGame(Context));
                 Embed embed = new EmbedBuilder()
-                    .WithAuthor("Sequence")
                     .WithDescription("The game has ended.")
                     .WithColor(new Color(0x5864f2))
                     .Build();
@@ -172,7 +189,7 @@ namespace Until.Commands
             }
 
             game.GameStatus = SequenceGame.Status.Color;
-            await UpdateGame(Context);
+            await Update(Context);
         }
 
         [ComponentInteraction("sequence-select*")]
@@ -205,18 +222,11 @@ namespace Until.Commands
                 ((SequencePlayer)game.Players.Find(p => p.ID == Context.User.Id)).Color = colors[c];
             }
             catch (Exception) { }
-            
+
             if (game.Players.Count == game.Players.Where(p => ((SequencePlayer)p).Color != SequenceGame.Color.None).Select(p => ((SequencePlayer)p).Color).Distinct().Count())
                 game.GameStatus = SequenceGame.Status.Start;
-            
-            await UpdateGame(Context);
-        }
 
-        public async Task Start(IInteractionContext ctx)
-        {
-            List<FileAttachment> attachments = new List<FileAttachment>();
-            attachments.Add(((SequenceGame)_game.RunningGame(Context)).Table.ToImage(_emoji));
-            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Attachments = attachments; m.Embed = null; m.Components = null; });
+            await Update(Context);
         }
     }
 }

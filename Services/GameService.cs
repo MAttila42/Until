@@ -39,4 +39,46 @@ namespace Until.Services
             this.ID = userId;
         }
     }
+
+    public class Card
+    {
+        public static Dictionary<char, string> Faces = new Dictionary<char, string>()
+        {
+            { 'A', "ace" },
+            { '2', "two" },
+            { '3', "three" },
+            { '4', "four" },
+            { '5', "five" },
+            { '6', "six" },
+            { '7', "seven" },
+            { '8', "eight" },
+            { '9', "nine" },
+            { 'T', "ten" },
+            { 'J', "jack" },
+            { 'Q', "queen" },
+            { 'K', "king" },
+            { 'X', "joker" }
+        };
+
+        public static Dictionary<char, string> Suits = new Dictionary<char, string>()
+        {
+            { 'C', "_of_clubs" },
+            { 'S', "_of_spades" },
+            { 'H', "_of_hearts" },
+            { 'D', "_of_diamonds" },
+            { 'X', "" }
+        };
+
+        public List<string> Deck
+        {
+            get
+            {
+                List<string> temp = new List<string>();
+                foreach (char f in Faces.Keys.Take(13))
+                    foreach (char s in Suits.Keys.Take(4))
+                        temp.Add($"{f}{s}");
+                return temp;
+            }
+        }
+    }
 }

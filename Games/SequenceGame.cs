@@ -94,40 +94,14 @@ namespace Until.Games
                 "AC", "7S", "6S", "5S", "4S", "3S", "2S", "2H", "3H", "5D", 
                 "XX", "AD", "KD", "QD", "TD", "9D", "8D", "7D", "6D", "XX"
             };
-            
-            Dictionary<char, string> faces = new Dictionary<char, string>()
-            {
-                { 'A', "ace" },
-                { '2', "two" },
-                { '3', "three" },
-                { '4', "four" },
-                { '5', "five" },
-                { '6', "six" },
-                { '7', "seven" },
-                { '8', "eight" },
-                { '9', "nine" },
-                { 'T', "ten" },
-                { 'J', "jack" },
-                { 'Q', "queen" },
-                { 'K', "king" },
-                { 'X', "joker" }
-            };
-            Dictionary<char, string> suits = new Dictionary<char, string>()
-            {
-                { 'C', "_of_clubs" },
-                { 'S', "_of_spades" },
-                { 'H', "_of_hearts" },
-                { 'D', "_of_diamonds" },
-                { 'X', "" }
-            };
 
             byte i = 0;
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
                 {
                     string c = tableBase[i++];
-                    string cf = faces[c[0]];
-                    string cs = suits[c[1]];
+                    string cf = Card.Faces[c[0]];
+                    string cs = Card.Suits[c[1]];
                     this.cells[x, y] = new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
                 }
         }
