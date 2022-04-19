@@ -25,31 +25,36 @@ namespace Until.Games
             Start
         }
 
-        public SequenceTable Table;
-        public Status GameStatus;
+        private SequenceTable table;
+
+        public Status GameStatus { get; set; }
+        
+        public SequenceTable Table => this.table;
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
         {
             this.Players.Add(new SequencePlayer(userId));
-            this.Table = new SequenceTable(emojiService);
+            this.table = new SequenceTable(emojiService);
             this.GameStatus = Status.Init;
         }
     }
 
     public class SequencePlayer : Player
     {
-        public SequenceGame.Color Color;
+        public SequenceGame.Color Color { get; set; }
 
         public string ColorEmoji
         {
             get
             {
-                Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>();
-                colors.Add(SequenceGame.Color.None, ":black_circle:");
-                colors.Add(SequenceGame.Color.Red, ":red_circle:");
-                colors.Add(SequenceGame.Color.Green, ":green_circle:");
-                colors.Add(SequenceGame.Color.Blue, ":blue_circle:");
-                colors.Add(SequenceGame.Color.Joker, ":grey_question:");
+                Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>()
+                {
+                    { SequenceGame.Color.None, ":black_circle:" },
+                    { SequenceGame.Color.Red, ":red_circle:" },
+                    { SequenceGame.Color.Green, ":green_circle:" },
+                    { SequenceGame.Color.Blue, ":blue_circle:" },
+                    { SequenceGame.Color.Joker, ":grey_question:" }
+                };
                 return colors[this.Color];
             }
         }
@@ -109,18 +114,20 @@ namespace Until.Games
 
     class SequenceTableCell
     {
-        public byte X;
-        public byte Y;
-        public GuildEmote Card;
+        private GuildEmote card;
+        
+        public byte X { get; private set; }
+        public byte Y { get; private set; }
+        public SequenceGame.Color Color { get; set; }
 
-        private SequenceGame.Color color;
+        public GuildEmote Card => this.card;
 
         public SequenceTableCell(byte x, byte y, GuildEmote card, SequenceGame.Color color)
         {
             this.X = x;
             this.Y = y;
-            this.Card = card;
-            this.color = color;
+            this.card = card;
+            this.Color = color;
         }
     }
 }

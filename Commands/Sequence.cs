@@ -65,12 +65,12 @@ namespace Until.Commands
                 byte i = 0;
                 components = new ComponentBuilder();
                 embed.WithDescription("Players, select your colors in which you will play!");
-                ButtonStyle[] styles = new ButtonStyle[3]
+                ButtonStyle[] styles = new ButtonStyle[4]
                 {
                     ButtonStyle.Danger,
                     ButtonStyle.Success,
-                    ButtonStyle.Primary
-                    //ButtonStyle.Secondary
+                    ButtonStyle.Primary,
+                    ButtonStyle.Secondary
                 };
                 foreach (var c in colors.Take(3))
                 {
@@ -91,13 +91,33 @@ namespace Until.Commands
             }
 
             if (game.GameStatus == SequenceGame.Status.Start)
+            {
+                await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m => { m.Content = _emoji.GetEmoji("util_loading").ToString(); });
                 await UpdateGame(ctx, game);
+            }
         }
 
         private async Task UpdateGame(IInteractionContext ctx, SequenceGame game)
         {
             List <FileAttachment> attachments = new List<FileAttachment>() { ((SequenceGame)_game.RunningGame(Context)).Table.ToImage(_emoji) };
-            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Attachments = attachments; m.Embed = null; m.Components = null; });
+
+            EmbedBuilder embed = new EmbedBuilder()
+                .AddField($"XY's turn", "To check your cards, use the `/cards` command!")
+                .WithColor(new Color(0x5864f2));
+
+            SelectMenuBuilder selectMenu = new SelectMenuBuilder()
+                .WithPlaceholder("Select a card to play!")
+                .WithCustomId("sequence-selectmenu")
+                .WithMinValues(1)
+                .WithMaxValues(1);
+
+            for (int i = 1; i <= 7; i++)
+                selectMenu.AddOption(i.ToString(), i.ToString());
+
+            ComponentBuilder components = new ComponentBuilder()
+                .WithSelectMenu(selectMenu);
+
+            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Content = ""; m.Attachments = attachments; m.Embed = embed.Build(); m.Components = components.Build(); });
         }
 
         [SlashCommand("sequence", "Start a new game of Sequence")]
