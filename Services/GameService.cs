@@ -69,7 +69,7 @@ namespace Until.Services
             { 'X', "" }
         };
 
-        public List<string> Deck
+        public static List<string> Deck
         {
             get
             {
@@ -80,5 +80,7 @@ namespace Until.Services
                 return temp;
             }
         }
+
+        public static string Name(string code) => Faces[code[0]] + Suits[code[1]];
     }
 }

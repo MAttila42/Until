@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using SkiaSharp;
 using Discord;
 using Until.Services;
@@ -26,21 +29,37 @@ namespace Until.Games
         }
 
         private SequenceTable table;
+        private List<string> deck;
 
         public Status GameStatus { get; set; }
-        
+
         public SequenceTable Table => this.table;
+
+        public string TakeCard()
+        {
+            string temp = this.deck.First();
+            this.deck.RemoveAt(0);
+            return temp;
+        }
 
         public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
         {
             this.Players.Add(new SequencePlayer(userId));
             this.table = new SequenceTable(emojiService);
             this.GameStatus = Status.Init;
+            this.deck = new List<string>();
+            for (int i = 0; i < 2; i++)
+                foreach (string c in Card.Deck)
+                    this.deck.Add(c);
+            Random r = new Random();
+            r.Shuffle(ref this.deck);
         }
     }
 
     public class SequencePlayer : Player
     {
+        private List<string> hand;
+
         public SequenceGame.Color Color { get; set; }
 
         public string ColorEmoji
@@ -59,8 +78,17 @@ namespace Until.Games
             }
         }
 
+        public List<string> Hand => this.hand.Select(c => Card.Name(c)).ToList();
+
+        public void FillHand(ref SequenceGame game)
+        {
+            for (int i = 0; i < 7; i++)
+                this.hand.Add(game.TakeCard());
+        }
+
         public SequencePlayer(ulong userId) : base(userId)
         {
+            this.hand = new List<string>();
             this.Color = SequenceGame.Color.None;
         }
     }
@@ -82,7 +110,7 @@ namespace Until.Games
             return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Sequence.png");
         }
 
-        public SequenceTable(EmojiService emojiService)
+        public SequenceTable(EmojiService emoji)
         {
             this.cells = new SequenceTableCell[10, 10];
 
@@ -107,7 +135,7 @@ namespace Until.Games
                     string c = tableBase[i++];
                     string cf = Card.Faces[c[0]];
                     string cs = Card.Suits[c[1]];
-                    this.cells[x, y] = new SequenceTableCell(x, y, emojiService.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
+                    this.cells[x, y] = new SequenceTableCell(x, y, emoji.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
                 }
         }
     }

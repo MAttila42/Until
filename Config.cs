@@ -7,9 +7,9 @@ namespace Until
 {
     public class Config
     {
-        public string Token;
-        public ulong OwnerID;
-        public List<ulong> EmojiServers;
+        public string Token { get; private set; }
+        public ulong OwnerID { get; private set; }
+        public List<ulong> EmojiServers { get; private set; }
 
         public Config(string path)
         {

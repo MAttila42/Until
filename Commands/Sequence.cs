@@ -93,6 +93,10 @@ namespace Until.Commands
             if (game.GameStatus == SequenceGame.Status.Start)
             {
                 await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m => { m.Content = _emoji.GetEmoji("util_loading").ToString(); });
+                Random r = new Random();
+                r.Shuffle(ref game.Players);
+                foreach (SequencePlayer p in game.Players)
+                    p.FillHand(ref game);
                 await UpdateGame(ctx, game);
             }
         }
