@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using SkiaSharp;
 using Discord;
 using Until.Services;
@@ -33,12 +32,14 @@ namespace Until.Games
 
         public Status GameStatus { get; set; }
 
-        public SequenceTable Table => this.table;
+        public FileAttachment TableImage(in EmojiService emoji) => this.table.ToImage(emoji);
 
         public string TakeCard()
         {
-            string temp = this.deck.First();
-            this.deck.RemoveAt(0);
+            Random r = new Random();
+            int i = r.Next(0, this.deck.Count);
+            string temp = this.deck[i];
+            this.deck.RemoveAt(i);
             return temp;
         }
 
@@ -51,8 +52,6 @@ namespace Until.Games
             for (int i = 0; i < 2; i++)
                 foreach (string c in Card.Deck)
                     this.deck.Add(c);
-            Random r = new Random();
-            r.Shuffle(ref this.deck);
         }
     }
 
@@ -78,9 +77,9 @@ namespace Until.Games
             }
         }
 
-        public List<string> Hand => this.hand.Select(c => Card.Name(c)).ToList();
+        public List<string> HeldCardNames => this.hand.Select(c => Card.Name(c)).ToList();
 
-        public void FillHand(ref SequenceGame game)
+        public void FillHand(in SequenceGame game)
         {
             for (int i = 0; i < 7; i++)
                 this.hand.Add(game.TakeCard());
@@ -142,19 +141,16 @@ namespace Until.Games
 
     class SequenceTableCell
     {
-        private GuildEmote card;
-        
         public byte X { get; private set; }
         public byte Y { get; private set; }
+        public GuildEmote Card { get; set; }
         public SequenceGame.Color Color { get; set; }
-
-        public GuildEmote Card => this.card;
 
         public SequenceTableCell(byte x, byte y, GuildEmote card, SequenceGame.Color color)
         {
             this.X = x;
             this.Y = y;
-            this.card = card;
+            this.Card = card;
             this.Color = color;
         }
     }

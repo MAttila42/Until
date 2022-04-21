@@ -23,7 +23,7 @@ namespace Until.Commands
                 switch (game)
                 {
                     case SequenceGame g:
-                        List<string> hand = ((SequencePlayer)g.Players.Find(p => p.ID == Context.User.Id)).Hand;
+                        List<string> hand = ((SequencePlayer)g.Players.Find(p => p.ID == Context.User.Id)).HeldCardNames;
                         if (hand.Count == 0)
                             throw new Exception();
                         StringBuilder sb = new StringBuilder();

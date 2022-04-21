@@ -76,7 +76,7 @@ namespace Until
                 await _interaction.RegisterCommandsToGuildAsync(guild.Id);
             };
 
-            await Task.Delay(-1);
+            await Task.Delay(-1).ConfigureAwait(false);
         }
 
         private Task Log(LogMessage msg)

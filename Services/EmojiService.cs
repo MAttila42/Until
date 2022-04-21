@@ -34,7 +34,5 @@ namespace Until.Services
 
             Log("Emojis loaded");
         }
-
-        //public EmojiService() { }
     }
 }

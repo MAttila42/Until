@@ -38,9 +38,9 @@ namespace Until.Commands
                 game.GameStatus == SequenceGame.Status.Join ||
                 game.GameStatus == SequenceGame.Status.Color ||
                 game.GameStatus == SequenceGame.Status.Start)
-                await UpdateMenu(ctx, game);
+                await UpdateMenu(ctx, game).ConfigureAwait(false);
             else
-                await UpdateGame(ctx, game);
+                await UpdateGame(ctx, game).ConfigureAwait(false);
         }
 
         private async Task UpdateMenu(IInteractionContext ctx, SequenceGame game)
@@ -92,18 +92,16 @@ namespace Until.Commands
 
             if (game.GameStatus == SequenceGame.Status.Start)
             {
-                await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m => { m.Content = _emoji.GetEmoji("util_loading").ToString(); });
-                Random r = new Random();
-                r.Shuffle(ref game.Players);
+                await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m => { m.Content = $"{_emoji.GetEmoji("util_loading")} Loading..."; });
                 foreach (SequencePlayer p in game.Players)
-                    p.FillHand(ref game);
+                    p.FillHand(game);
                 await UpdateGame(ctx, game);
             }
         }
 
         private async Task UpdateGame(IInteractionContext ctx, SequenceGame game)
         {
-            List <FileAttachment> attachments = new List<FileAttachment>() { ((SequenceGame)_game.RunningGame(Context)).Table.ToImage(_emoji) };
+            List <FileAttachment> attachments = new List<FileAttachment>() { ((SequenceGame)_game.RunningGame(Context)).TableImage(_emoji) };
 
             EmbedBuilder embed = new EmbedBuilder()
                 .AddField($"XY's turn", "To check your cards, use the `/cards` command!")
@@ -138,16 +136,18 @@ namespace Until.Commands
                 return;
             }
 
-            if (_game.Games.Any(g => g.ChannelID == Context.Channel.Id && g.Players.Any(p => p.ID == Context.User.Id)))
+            try
+            {
+                SequenceGame game = _game.RunningGame(Context) as SequenceGame;
+                _game.AddGame(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
+                await Update(Context);
+            }
+            catch (Exception)
             {
                 ComponentBuilder components = new ComponentBuilder()
                     .WithButton("Leave Game", "sequence-leavegame", ButtonStyle.Danger);
                 await RespondAsync(embed: _embed.Error("You are already playing a game here!"), components: components.Build());
-                return;
             }
-
-            _game.Games.Add(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
-            await Update(Context);
         }
 
         [ComponentInteraction("sequence-join")]
@@ -181,7 +181,7 @@ namespace Until.Commands
             }
             else
             {
-                _game.Games.Remove(_game.RunningGame(Context));
+                _game.RemoveGame(_game.RunningGame(Context));
                 Embed embed = new EmbedBuilder()
                     .WithDescription("The game has ended.")
                     .WithColor(new Color(0x5864f2))
@@ -194,7 +194,7 @@ namespace Until.Commands
         [ComponentInteraction("sequence-leavegame")]
         public async Task LeaveGame()
         {
-            _game.Games.Remove(_game.RunningGame(Context));
+            _game.RemoveGame(_game.RunningGame(Context));
             await RespondAsync(embed: _embed.Info("You've been removed from the game."), ephemeral: true);
         }
 
@@ -213,7 +213,7 @@ namespace Until.Commands
             }
 
             game.GameStatus = SequenceGame.Status.Color;
-            await Update(Context);
+            await Update(Context).ConfigureAwait(false);
         }
 
         [ComponentInteraction("sequence-select*")]

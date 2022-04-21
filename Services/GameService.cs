@@ -7,32 +7,38 @@ namespace Until.Services
 {
     public class GameService
     {
-        public List<Game> Games;
+        private List<Game> games;
 
-        public Game WaitingGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
-        public Game RunningGame(IInteractionContext ctx) => this.Games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
+        public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
+        public Game RunningGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
+
+        public void AddGame(in Game game) => this.games.Add(game);
+        public void RemoveGame(in Game game) => this.games.Remove(game);
 
         public GameService()
         {
-            this.Games = new List<Game>();
+            this.games = new List<Game>();
         }
     }
 
     public abstract class Game
     {
-        public ulong ChannelID;
-        public List<Player> Players;
+        private List<Player> players;
+
+        public ulong ChannelID { get; private set; }
+
+        public List<Player> Players => this.players;
 
         public Game(ulong channelId)
         {
+            this.players = new List<Player>();
             this.ChannelID = channelId;
-            this.Players = new List<Player>();
         }
     }
 
     public abstract class Player
     {
-        public ulong ID;
+        public ulong ID { get; private set; }
 
         public Player(ulong userId)
         {
@@ -42,7 +48,7 @@ namespace Until.Services
 
     public class Card
     {
-        public static Dictionary<char, string> Faces = new Dictionary<char, string>()
+        public readonly static Dictionary<char, string> Faces = new Dictionary<char, string>()
         {
             { 'A', "ace" },
             { '2', "two" },
@@ -60,7 +66,7 @@ namespace Until.Services
             { 'X', "joker" }
         };
 
-        public static Dictionary<char, string> Suits = new Dictionary<char, string>()
+        public readonly static Dictionary<char, string> Suits = new Dictionary<char, string>()
         {
             { 'C', "_of_clubs" },
             { 'S', "_of_spades" },
