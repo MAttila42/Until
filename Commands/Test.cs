@@ -8,7 +8,6 @@ namespace Until.Commands
     public class Test : InteractionModuleBase
     {
         public Config _config { get; set; }
-        public EmbedService _embed { get; set; }
 
         [SlashCommand("test", "[DEV] Test something")]
         [DefaultPermission(false)]

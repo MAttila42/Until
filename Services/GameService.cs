@@ -7,7 +7,7 @@ namespace Until.Services
 {
     public class GameService
     {
-        private List<Game> games;
+        private readonly List<Game> games;
 
         public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
         public Game RunningGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
@@ -29,7 +29,7 @@ namespace Until.Services
 
         public List<Player> Players => this.players;
 
-        public Game(ulong channelId)
+        protected Game(ulong channelId)
         {
             this.players = new List<Player>();
             this.ChannelID = channelId;
@@ -40,7 +40,7 @@ namespace Until.Services
     {
         public ulong ID { get; private set; }
 
-        public Player(ulong userId)
+        protected Player(ulong userId)
         {
             this.ID = userId;
         }
@@ -48,7 +48,7 @@ namespace Until.Services
 
     public class Card
     {
-        public readonly static Dictionary<char, string> Faces = new Dictionary<char, string>()
+        public readonly static Dictionary<char, string> Faces = new Dictionary<char, string>
         {
             { 'A', "ace" },
             { '2', "two" },
@@ -66,7 +66,7 @@ namespace Until.Services
             { 'X', "joker" }
         };
 
-        public readonly static Dictionary<char, string> Suits = new Dictionary<char, string>()
+        public readonly static Dictionary<char, string> Suits = new Dictionary<char, string>
         {
             { 'C', "_of_clubs" },
             { 'S', "_of_spades" },

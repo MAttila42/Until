@@ -9,7 +9,6 @@ namespace Until.Commands
     public class Operate : InteractionModuleBase
     {
         public Config _config { get; set; }
-        public EmbedService _embed { get; set; }
 
         public enum Operation
         {
@@ -27,11 +26,11 @@ namespace Until.Commands
                 switch (operation)
                 {
                     case Operation.ShutDown:
-                        await RespondAsync(embed: _embed.Info("Shutting down..."));
+                        await RespondAsync(embed: EmbedService.Info("Shutting down..."));
                         Environment.Exit(0);
                         break;
                     case Operation.Restart:
-                        await RespondAsync(embed: _embed.Info("Restarting bot... (This may take a few moments)"));
+                        await RespondAsync(embed: EmbedService.Info("Restarting bot... (This may take a few moments)"));
                         commands =
                             "cd ..\n" +
                             "sudo git pull\n" +
@@ -40,7 +39,7 @@ namespace Until.Commands
                             "sudo dotnet Until.dll";
                         break;
                     default:
-                        await RespondAsync(embed: _embed.Error("Can't do operation!"));
+                        await RespondAsync(embed: EmbedService.Error("Can't do operation!"));
                         return;
                 }
 
@@ -55,7 +54,7 @@ namespace Until.Commands
                 Process.Start(process);
                 Environment.Exit(0);
             }
-            catch (Exception) { await RespondAsync(embed: _embed.Error("Can't find bash!"), ephemeral: true); }
+            catch (Exception) { await RespondAsync(embed: EmbedService.Error("Can't find bash!"), ephemeral: true); }
         }
     }
 }

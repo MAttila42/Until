@@ -10,7 +10,6 @@ namespace Until.Commands
 {
     public class Cards : InteractionModuleBase
     {
-        public EmbedService _embed { get; set; }
         public EmojiService _emoji { get; set; }
         public GameService _game { get; set; }
 
@@ -25,7 +24,7 @@ namespace Until.Commands
                     case SequenceGame g:
                         List<string> hand = ((SequencePlayer)g.Players.Find(p => p.ID == Context.User.Id)).HeldCardNames;
                         if (hand.Count == 0)
-                            throw new Exception();
+                            throw new ArgumentException("Player has no cards in their hand!");
                         StringBuilder sb = new StringBuilder();
                         foreach (var c in hand)
                             sb.Append(_emoji.GetEmoji(c));
@@ -37,7 +36,7 @@ namespace Until.Commands
             }
             catch (Exception)
             {
-                await RespondAsync(embed: _embed.Error("You don't have any cards!"), ephemeral: true);
+                await RespondAsync(embed: EmbedService.Error("You don't have any cards!"), ephemeral: true);
             }
         }
     }

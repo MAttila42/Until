@@ -7,5 +7,6 @@ namespace Until
             Until bot = new Until(new Config("config.xml"));
             bot.MainAsync().GetAwaiter().GetResult();
         }
+        protected Program() { }
     }
 }

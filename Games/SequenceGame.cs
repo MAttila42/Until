@@ -27,8 +27,8 @@ namespace Until.Games
             Start
         }
 
-        private SequenceTable table;
-        private List<string> deck;
+        private readonly SequenceTable table;
+        private readonly List<string> deck;
 
         public Status GameStatus { get; set; }
 
@@ -65,7 +65,7 @@ namespace Until.Games
         {
             get
             {
-                Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>()
+                Dictionary<SequenceGame.Color, string> colors = new Dictionary<SequenceGame.Color, string>
                 {
                     { SequenceGame.Color.None, ":black_circle:" },
                     { SequenceGame.Color.Red, ":red_circle:" },
@@ -94,7 +94,7 @@ namespace Until.Games
 
     public class SequenceTable
     {
-        private SequenceTableCell[,] cells;
+        private readonly SequenceTableCell[,] cells;
 
         public FileAttachment ToImage(in EmojiService emojiService)
         {
@@ -113,7 +113,7 @@ namespace Until.Games
         {
             this.cells = new SequenceTableCell[10, 10];
 
-            string[] tableBase = new string[100]
+            string[] tableBase = new[]
             {
                 "XX", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "XX", 
                 "6C", "5C", "4C", "3C", "2C", "AH", "KH", "QH", "TH", "TS", 
