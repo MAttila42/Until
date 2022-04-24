@@ -29,10 +29,12 @@ namespace Until.Games
 
         private readonly SequenceTable table;
         private readonly List<string> deck;
+        private byte currentPlayerIndex;
 
         public Status GameStatus { get; set; }
 
         public FileAttachment TableImage(in EmojiService emoji) => this.table.ToImage(emoji);
+        public SequencePlayer CurrentPlayer => this.Players[currentPlayerIndex] as SequencePlayer;
 
         public string TakeCard()
         {
@@ -43,10 +45,11 @@ namespace Until.Games
             return temp;
         }
 
-        public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
+        public SequenceGame(ulong channelId, ulong userId, ulong messageId, EmojiService emoji) : base(channelId, messageId)
         {
             this.Players.Add(new SequencePlayer(userId));
-            this.table = new SequenceTable(emojiService);
+            this.table = new SequenceTable(emoji);
+            this.currentPlayerIndex = 0;
             this.GameStatus = Status.Init;
             this.deck = new List<string>();
             for (int i = 0; i < 2; i++)

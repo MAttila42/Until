@@ -28,7 +28,7 @@ namespace Until.Commands
 
         private async Task Update(IInteractionContext ctx)
         {
-            SequenceGame game = _game.RunningGame(ctx) as SequenceGame;
+            SequenceGame game = _game.GetGame(ctx, false) as SequenceGame;
             if (game.GameStatus == SequenceGame.Status.Remove)
                 game.Players.RemoveAll(p => p.ID == Context.User.Id);
 
@@ -101,15 +101,15 @@ namespace Until.Commands
 
         private async Task UpdateGame(IInteractionContext ctx, SequenceGame game)
         {
-            List<FileAttachment> attachments = new List<FileAttachment> { ((SequenceGame)_game.RunningGame(Context)).TableImage(_emoji) };
+            List<FileAttachment> attachments = new List<FileAttachment> { ((SequenceGame)_game.GetGame(Context)).TableImage(_emoji) };
 
             EmbedBuilder embed = new EmbedBuilder()
-                .AddField($"XY's turn", "To check your cards, use the `/cards` command!")
+                .AddField($"{((IGuildUser)_client.GetUser(game.CurrentPlayer.ID)).Nickname}'s turn", "To check your cards, use the `/cards` command!")
                 .WithColor(new Color(0x5864f2));
 
             SelectMenuBuilder selectMenu = new SelectMenuBuilder()
                 .WithPlaceholder("Select a card to play!")
-                .WithCustomId("sequence-selectmenu")
+                .WithCustomId("sequence-cardselectionmenu")
                 .WithMinValues(1)
                 .WithMaxValues(1);
 
@@ -138,7 +138,8 @@ namespace Until.Commands
 
             try
             {
-                _game.AddGame(new SequenceGame(Context.Channel.Id, Context.User.Id, _emoji));
+                IUserMessage message = await FollowupAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
+                _game.AddGame(new SequenceGame(Context.Channel.Id, Context.User.Id, message.Id, _emoji));
                 await Update(Context);
             }
             catch (Exception)
@@ -152,11 +153,23 @@ namespace Until.Commands
         [ComponentInteraction("sequence-join")]
         public async Task Join()
         {
-            if (_game.WaitingGame(Context).Players.Any(p => p.ID == Context.User.Id))
-                await RespondAsync(embed: EmbedService.Error("You are already joined!"), ephemeral: true);
-            else
+            //if (_game.WaitingGame(Context).Players.Any(p => p.ID == Context.User.Id))
+            //    await RespondAsync(embed: EmbedService.Error("You are already joined!"), ephemeral: true);
+            //else
+            //{
+            //    SequenceGame game = _game.WaitingGame(Context) as SequenceGame;
+            //    game.Players.Add(new SequencePlayer(Context.User.Id));
+            //    game.GameStatus = SequenceGame.Status.Join;
+            //    await Update(Context);
+            //}
+
+            try
             {
-                SequenceGame game = _game.WaitingGame(Context) as SequenceGame;
+                _game.GetGameByPlayer(Context);
+            }
+            catch (Exception)
+            {
+                SequenceGame game = _game.GetGame(Context) as SequenceGame;
                 game.Players.Add(new SequencePlayer(Context.User.Id));
                 game.GameStatus = SequenceGame.Status.Join;
                 await Update(Context);
@@ -166,34 +179,58 @@ namespace Until.Commands
         [ComponentInteraction("sequence-leave")]
         public async Task Leave()
         {
-            if (!_game.WaitingGame(Context).Players.Select(p => p.ID).ToList().Contains(Context.User.Id))
+            //if (!_game.WaitingGame(Context).Players.Select(p => p.ID).ToList().Contains(Context.User.Id))
+            //{
+            //    await RespondAsync(embed: EmbedService.Error("You aren't joined!"), ephemeral: true);
+            //    return;
+            //}
+
+            //SequenceGame game = _game.RunningGame(Context) as SequenceGame;
+            //if (game.Players.Count > 1)
+            //{
+            //    game.GameStatus = SequenceGame.Status.Remove;
+            //    await Update(Context);
+            //}
+            //else
+            //{
+            //    _game.RemoveGame(_game.RunningGame(Context));
+            //    Embed embed = new EmbedBuilder()
+            //        .WithDescription("The game has ended.")
+            //        .WithColor(new Color(0x5864f2))
+            //        .Build();
+
+            //    await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
+            //}
+
+            try
+            {
+                SequenceGame game = _game.GetGame(Context) as SequenceGame;
+                if (game.Players.Count > 1)
+                {
+                    game.GameStatus = SequenceGame.Status.Remove;
+                    await Update(Context);
+                }
+                else
+                {
+                    _game.RemoveGame(game);
+                    Embed embed = new EmbedBuilder()
+                        .WithDescription("The game has ended.")
+                        .WithColor(new Color(0x5864f2))
+                        .Build();
+
+                    await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
+                }
+            }
+            catch (Exception)
             {
                 await RespondAsync(embed: EmbedService.Error("You aren't joined!"), ephemeral: true);
-                return;
-            }
-
-            SequenceGame game = _game.RunningGame(Context) as SequenceGame;
-            if (game.Players.Count > 1)
-            {
-                game.GameStatus = SequenceGame.Status.Remove;
-                await Update(Context);
-            }
-            else
-            {
-                _game.RemoveGame(_game.RunningGame(Context));
-                Embed embed = new EmbedBuilder()
-                    .WithDescription("The game has ended.")
-                    .WithColor(new Color(0x5864f2))
-                    .Build();
-
-                await Context.Channel.ModifyMessageAsync(((SocketMessageComponent)Context.Interaction).Message.Id, m => { m.Embed = embed; m.Components = null; });
             }
         }
 
         [ComponentInteraction("sequence-leavegame")]
         public async Task LeaveGame()
         {
-            _game.RemoveGame(_game.RunningGame(Context));
+            _game.RemoveGame(_game.GetGameByPlayer(Context));
             await RespondAsync(embed: EmbedService.Info("You've been removed from the game."), ephemeral: true);
         }
 
@@ -203,7 +240,7 @@ namespace Until.Commands
             SequenceGame game;
             try
             {
-                game = _game.RunningGame(Context) as SequenceGame;
+                game = _game.GetGame(Context) as SequenceGame;
             }
             catch (Exception)
             {
@@ -221,7 +258,7 @@ namespace Until.Commands
             SequenceGame game;
             try
             {
-                game = _game.RunningGame(Context) as SequenceGame;
+                game = _game.GetGame(Context) as SequenceGame;
             }
             catch (Exception)
             {

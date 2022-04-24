@@ -18,7 +18,7 @@ namespace Until.Commands
         {
             try
             {
-                var game = _game.RunningGame(Context);
+                var game = _game.GetGameByPlayer(Context);
                 switch (game)
                 {
                     case SequenceGame g:

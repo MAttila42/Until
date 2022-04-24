@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
+//using System.Text.RegularExpressions;
 using Discord;
 
 namespace Until.Services
@@ -9,8 +9,12 @@ namespace Until.Services
     {
         private readonly List<Game> games;
 
-        public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
-        public Game RunningGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
+        public Game GetGame(IInteractionContext ctx) => GetGame(ctx, true);
+        public Game GetGame(IInteractionContext ctx, bool isJoined) => this.games.Find(g => g.MessageID == ((IComponentInteraction)ctx).Message.Id); //  && (isJoined && g.Players.Any(p => p.ID == ctx.User.Id))
+        public Game GetGameByPlayer(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
+
+        //public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
+        //public Game RunningGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
 
         public void AddGame(in Game game) => this.games.Add(game);
         public void RemoveGame(in Game game) => this.games.Remove(game);
@@ -26,13 +30,15 @@ namespace Until.Services
         private List<Player> players;
 
         public ulong ChannelID { get; private set; }
+        public ulong MessageID { get; private set; }
 
         public List<Player> Players => this.players;
 
-        protected Game(ulong channelId)
+        protected Game(ulong channelId, ulong messageId)
         {
             this.players = new List<Player>();
             this.ChannelID = channelId;
+            this.MessageID = messageId;
         }
     }
 
