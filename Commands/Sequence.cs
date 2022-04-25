@@ -77,17 +77,14 @@ namespace Until.Commands
                 }
             }
 
-            if (game.GameStatus == SequenceGame.Status.Init)
-                await ctx.Interaction.RespondAsync(embed: embed.Build(), components: components.Build());
-            else
+            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m =>
             {
-                await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m =>
-                {
-                    m.Embed = embed.Build();
-                    m.Components = components.Build();
-                });
+                m.Embed = embed.Build();
+                m.Components = components.Build();
+            });
+
+            if (game.GameStatus != SequenceGame.Status.Init)
                 await DeferAsync();
-            }
 
             if (game.GameStatus == SequenceGame.Status.Start)
             {
@@ -136,18 +133,21 @@ namespace Until.Commands
                 return;
             }
 
-            try
-            {
+            //try
+            //{
+                //await RespondAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
+                await DeferAsync();
                 IUserMessage message = await FollowupAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
                 _game.AddGame(new SequenceGame(Context.Channel.Id, Context.User.Id, message.Id, _emoji));
-                await Update(Context);
-            }
-            catch (Exception)
-            {
-                ComponentBuilder components = new ComponentBuilder()
-                    .WithButton("Leave Game", "sequence-leavegame", ButtonStyle.Danger);
-                await RespondAsync(embed: EmbedService.Error("You are already playing a game here!"), components: components.Build());
-            }
+            //await Update(Context);
+            //await UpdateMenu(Context, _game.GetGameByPlayer(Context) as SequenceGame);
+            //}
+            //catch (Exception)
+            //{
+            //    ComponentBuilder components = new ComponentBuilder()
+            //        .WithButton("Leave Game", "sequence-leavegame", ButtonStyle.Danger);
+            //    await RespondAsync(embed: EmbedService.Error("You are already playing a game here!"), components: components.Build());
+            //}
         }
 
         [ComponentInteraction("sequence-join")]
