@@ -2,6 +2,8 @@
 using System.Linq;
 //using System.Text.RegularExpressions;
 using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace Until.Services
 {
@@ -10,7 +12,7 @@ namespace Until.Services
         private readonly List<Game> games;
 
         public Game GetGame(IInteractionContext ctx) => GetGame(ctx, true);
-        public Game GetGame(IInteractionContext ctx, bool isJoined) => this.games.Find(g => g.MessageID == ((IComponentInteraction)ctx).Message.Id); //  && (isJoined && g.Players.Any(p => p.ID == ctx.User.Id))
+        public Game GetGame(IInteractionContext ctx, bool isJoined) => this.games.Find(g => g.MessageID == ((SocketMessageComponent)ctx).Message.Id);  //  && (isJoined && g.Players.Any(p => p.ID == ctx.User.Id))
         public Game GetGameByContextPlayer(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
 
         //public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));

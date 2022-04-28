@@ -78,6 +78,7 @@ namespace Until.Commands
 
             await ctx.Channel.ModifyMessageAsync(messageId == 0 ? ((SocketMessageComponent)ctx.Interaction).Message.Id : messageId, m =>
             {
+                m.Content = "";
                 m.Embed = embed.Build();
                 m.Components = components.Build();
             });
@@ -132,16 +133,30 @@ namespace Until.Commands
                 return;
             }
 
-            //try
-            //{
-                //await RespondAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
+            try
+            {
+                var game = _game.GetGameByContextPlayer(Context);
+                ComponentBuilder components = new ComponentBuilder()
+                    .WithButton("Leave Game", "sequence-leavegame", ButtonStyle.Danger);
+                await RespondAsync(embed: EmbedService.Error("You are already playing a game here!"), components: components.Build());
+                return;
+            }
+            catch (Exception)
+            {
                 await DeferAsync();
                 IUserMessage message = await FollowupAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
                 SequenceGame game = new SequenceGame(Context.Channel.Id, Context.User.Id, message.Id, _emoji);
                 _game.AddGame(game);
                 await UpdateMenu(Context, game, message.Id);
-            //await Update(Context);
-            //await UpdateMenu(Context, _game.GetGameByPlayer(Context) as SequenceGame);
+            }
+
+            //try
+            //{
+            //    await DeferAsync();
+            //    IUserMessage message = await FollowupAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
+            //    SequenceGame game = new SequenceGame(Context.Channel.Id, Context.User.Id, message.Id, _emoji);
+            //    _game.AddGame(game);
+            //    await UpdateMenu(Context, game, message.Id);
             //}
             //catch (Exception)
             //{
@@ -167,6 +182,7 @@ namespace Until.Commands
             try
             {
                 _game.GetGameByContextPlayer(Context);
+                await RespondAsync(embed: EmbedService.Error("You are already joined!"), ephemeral: true);
             }
             catch (Exception)
             {
