@@ -11,7 +11,7 @@ namespace Until.Services
 
         public Game GetGame(IInteractionContext ctx) => GetGame(ctx, true);
         public Game GetGame(IInteractionContext ctx, bool isJoined) => this.games.Find(g => g.MessageID == ((IComponentInteraction)ctx).Message.Id); //  && (isJoined && g.Players.Any(p => p.ID == ctx.User.Id))
-        public Game GetGameByPlayer(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
+        public Game GetGameByContextPlayer(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
 
         //public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
         //public Game RunningGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));

@@ -32,17 +32,16 @@ namespace Until.Commands
             if (game.GameStatus == SequenceGame.Status.Remove)
                 game.Players.RemoveAll(p => p.ID == Context.User.Id);
 
-            if (game.GameStatus == SequenceGame.Status.Init ||
-                game.GameStatus == SequenceGame.Status.Remove ||
+            if (game.GameStatus == SequenceGame.Status.Remove ||
                 game.GameStatus == SequenceGame.Status.Join ||
                 game.GameStatus == SequenceGame.Status.Color ||
                 game.GameStatus == SequenceGame.Status.Start)
-                await UpdateMenu(ctx, game).ConfigureAwait(false);
+                await UpdateMenu(ctx, game, 0).ConfigureAwait(false);
             else
                 await UpdateGame(ctx, game).ConfigureAwait(false);
         }
 
-        private async Task UpdateMenu(IInteractionContext ctx, SequenceGame game)
+        private async Task UpdateMenu(IInteractionContext ctx, SequenceGame game, ulong messageId)
         {
             StringBuilder players = new StringBuilder();
             foreach (SequencePlayer p in game.Players)
@@ -77,14 +76,14 @@ namespace Until.Commands
                 }
             }
 
-            await ctx.Channel.ModifyMessageAsync(((SocketMessageComponent)ctx.Interaction).Message.Id, m =>
+            await ctx.Channel.ModifyMessageAsync(messageId == 0 ? ((SocketMessageComponent)ctx.Interaction).Message.Id : messageId, m =>
             {
                 m.Embed = embed.Build();
                 m.Components = components.Build();
             });
 
-            if (game.GameStatus != SequenceGame.Status.Init)
-                await DeferAsync();
+            //if (game.GameStatus != SequenceGame.Status.Init)
+            //    await DeferAsync();
 
             if (game.GameStatus == SequenceGame.Status.Start)
             {
@@ -138,7 +137,9 @@ namespace Until.Commands
                 //await RespondAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
                 await DeferAsync();
                 IUserMessage message = await FollowupAsync($"{_emoji.GetEmoji("util_loading")} Loading...");
-                _game.AddGame(new SequenceGame(Context.Channel.Id, Context.User.Id, message.Id, _emoji));
+                SequenceGame game = new SequenceGame(Context.Channel.Id, Context.User.Id, message.Id, _emoji);
+                _game.AddGame(game);
+                await UpdateMenu(Context, game, message.Id);
             //await Update(Context);
             //await UpdateMenu(Context, _game.GetGameByPlayer(Context) as SequenceGame);
             //}
@@ -165,7 +166,7 @@ namespace Until.Commands
 
             try
             {
-                _game.GetGameByPlayer(Context);
+                _game.GetGameByContextPlayer(Context);
             }
             catch (Exception)
             {
@@ -230,7 +231,7 @@ namespace Until.Commands
         [ComponentInteraction("sequence-leavegame")]
         public async Task LeaveGame()
         {
-            _game.RemoveGame(_game.GetGameByPlayer(Context));
+            _game.RemoveGame(_game.GetGameByContextPlayer(Context));
             await RespondAsync(embed: EmbedService.Info("You've been removed from the game."), ephemeral: true);
         }
 
