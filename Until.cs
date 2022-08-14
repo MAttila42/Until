@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -9,7 +6,7 @@ using Until.Services;
 
 namespace Until
 {
-    class Until
+    public class Until
     {
         private readonly Config _config;
         private readonly DiscordSocketClient _client;
@@ -24,7 +21,7 @@ namespace Until
             this._config = config;
             this._client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildEmojis,
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildEmojis | GatewayIntents.GuildMembers,
                 UseInteractionSnowflakeDate = false
             });
             this._interaction = new InteractionService(_client.Rest);
@@ -48,29 +45,19 @@ namespace Until
             await _client.LoginAsync(TokenType.Bot, this._config.Token);
             await _client.StartAsync();
 
-            _client.SlashCommandExecuted += async (interaction) =>
-            {
-                SocketInteractionContext<SocketSlashCommand> ctx = new SocketInteractionContext<SocketSlashCommand>(_client, interaction);
-                await _interaction.ExecuteCommandAsync(ctx, _services);
-            };
-
-            _client.ButtonExecuted += async (interaction) =>
-            {
-                SocketInteractionContext<SocketMessageComponent> ctx = new SocketInteractionContext<SocketMessageComponent>(_client, interaction);
-                await _interaction.ExecuteCommandAsync(ctx, _services);
-            };
+            _client.SlashCommandExecuted += ExecuteInteractionAsync;
+            _client.ButtonExecuted += ExecuteInteractionAsync;
+            _client.ModalSubmitted += ExecuteInteractionAsync;
 
             _client.Ready += async () =>
             {
-                await _emoji.LoadEmojis(_client, _config.EmojiServers);
-                await _interaction.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-                foreach (SocketGuild g in _client.Guilds)
-                    await _interaction.RegisterCommandsToGuildAsync(g.Id);
-            };
-
-            _client.JoinedGuild += async (guild) =>
-            {
-                await _interaction.RegisterCommandsToGuildAsync(guild.Id);
+                await _emoji.LoadEmojis(_client, _config.EmojiGuilds);
+                await _interaction.AddModulesAsync(typeof(Until).Assembly, _services);
+                #if DEBUG
+                await _interaction.RegisterCommandsToGuildAsync(_config.DebugGuild, true);
+                #else
+                await _interaction.RegisterCommandsGloballyAsync(true);
+                #endif
             };
 
             await Task.Delay(-1).ConfigureAwait(false);
@@ -80,6 +67,13 @@ namespace Until
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
+        }
+
+        private async Task ExecuteInteractionAsync<T>(T i)
+            where T : SocketInteraction
+        {
+            SocketInteractionContext<T> ctx = new SocketInteractionContext<T>(_client, i);
+            await _interaction.ExecuteCommandAsync(ctx, _services);
         }
     }
 }

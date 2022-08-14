@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-//using System.Text.RegularExpressions;
-using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
+﻿using Discord;
 
 namespace Until.Services
 {
@@ -11,15 +6,16 @@ namespace Until.Services
     {
         private readonly List<Game> games;
 
-        public Game GetGame(IInteractionContext ctx) => GetGame(ctx, true);
-        public Game GetGame(IInteractionContext ctx, bool isJoined) => this.games.Find(g => g.MessageID == ((SocketMessageComponent)ctx).Message.Id);  //  && (isJoined && g.Players.Any(p => p.ID == ctx.User.Id))
-        public Game GetGameByContextPlayer(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
-
-        //public Game WaitingGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Select(p => p.ID).Contains(ulong.Parse(Regex.Matches(((IComponentInteraction)ctx.Interaction).Message.Embeds.First().Fields.First().Value, "\\d*").Where(m => m.Value != "").First().Value)));
-        //public Game RunningGame(IInteractionContext ctx) => this.games.Find(g => g.ChannelID == ctx.Channel.Id && g.Players.Any(p => p.ID == ctx.User.Id));
-
-        public void AddGame(in Game game) => this.games.Add(game);
+        public Game GetGame(int id) => this.games.Find(g => g.ID == id);
+        public Game GetGame(IInteractionContext ctx) => this.games.Find(g => g.Players.Any(p => p.ID == ctx.User.Id) && g.Channel == ctx.Channel.Id);
         public void RemoveGame(in Game game) => this.games.Remove(game);
+
+        public void AddGame(in Game game)
+        {
+            try { game.ID = this.games.Max(g => g.ID) + 1; }
+            catch (Exception) { /*ignore*/ }
+            this.games.Add(game);
+        }
 
         public GameService()
         {
@@ -29,18 +25,16 @@ namespace Until.Services
 
     public abstract class Game
     {
+        public int ID { get; set; }
+        public ulong Channel { get; private set; }
         private List<Player> players;
-
-        public ulong ChannelID { get; private set; }
-        public ulong MessageID { get; private set; }
-
         public List<Player> Players => this.players;
 
-        protected Game(ulong channelId, ulong messageId)
+        protected Game(ulong channelId)
         {
+            this.ID = 0;
+            this.Channel = channelId;
             this.players = new List<Player>();
-            this.ChannelID = channelId;
-            this.MessageID = messageId;
         }
     }
 
@@ -56,45 +50,62 @@ namespace Until.Services
 
     public class Card
     {
-        public readonly static Dictionary<char, string> Faces = new Dictionary<char, string>
-        {
-            { 'A', "ace" },
-            { '2', "two" },
-            { '3', "three" },
-            { '4', "four" },
-            { '5', "five" },
-            { '6', "six" },
-            { '7', "seven" },
-            { '8', "eight" },
-            { '9', "nine" },
-            { 'T', "ten" },
-            { 'J', "jack" },
-            { 'Q', "queen" },
-            { 'K', "king" },
-            { 'X', "joker" }
-        };
+        public string Face { get; set; }
+        public string Suit { get; set; }
 
-        public readonly static Dictionary<char, string> Suits = new Dictionary<char, string>
-        {
-            { 'C', "_of_clubs" },
-            { 'S', "_of_spades" },
-            { 'H', "_of_hearts" },
-            { 'D', "_of_diamonds" },
-            { 'X', "" }
-        };
+        public override string ToString() => $"{this.Face}{(this.Suit == "joker" ? "" : $"_of_{this.Suit}")}";
+        public string ToString(bool code) => $"{Deck.Faces[this.Face]}{Deck.Suits[this.Suit]}";
 
-        public static List<string> Deck
+        public Card(string code)
         {
-            get
-            {
-                List<string> temp = new List<string>();
-                foreach (char f in Faces.Keys.Take(13))
-                    foreach (char s in Suits.Keys.Take(4))
-                        temp.Add($"{f}{s}");
-                return temp;
-            }
+            this.Face = Deck.Faces.First(f => f.Value == code[0]).Key;
+            this.Suit = Deck.Suits.First(s => s.Value == code[1]).Key;
+        }
+        public Card(string face, string suit)
+        {
+            this.Face = face;
+            this.Suit = suit;
+        }
+    }
+
+    public static class Deck
+    {
+        public static List<Card> French() => French(0);
+        public static List<Card> French(byte jokers)
+        {
+            List<Card> temp = new List<Card>();
+            foreach (string f in Faces.Keys.Take(13))
+                foreach (string s in Suits.Keys.Take(4))
+                    temp.Add(new(f, s));
+            for (byte i = 0; i < jokers; i++)
+                temp.Add(new("XX"));
+            return temp;
         }
 
-        public static string Name(string code) => Faces[code[0]] + Suits[code[1]];
+        public readonly static Dictionary<string, char> Faces = new Dictionary<string, char>
+        {
+            { "ace", 'A' },
+            { "two", '2' },
+            { "three", '3' },
+            { "four", '4' },
+            { "five", '5' },
+            { "six", '6' },
+            { "seven", '7' },
+            { "eight", '8' },
+            { "nine", '9' },
+            { "ten", 'T' },
+            { "jack", 'J' },
+            { "queen", 'Q' },
+            { "king", 'K' },
+            { "joker", 'X' }
+        };
+        public readonly static Dictionary<string, char> Suits = new Dictionary<string, char>
+        {
+            { "clubs", 'C' },
+            { "spades", 'S' },
+            { "hearts", 'H' },
+            { "diamonds", 'D' },
+            { "joker", 'X' }
+        };
     }
 }

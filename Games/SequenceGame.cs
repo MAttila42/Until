@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using SkiaSharp;
+﻿using SkiaSharp;
 using Discord;
 using Until.Services;
 
@@ -20,15 +17,13 @@ namespace Until.Games
 
         public enum Status
         {
-            Init,
-            Remove,
             Join,
             Color,
-            Start
+            Game
         }
 
         private readonly SequenceTable table;
-        private readonly List<string> deck;
+        private readonly List<Card> deck;
         private byte currentPlayerIndex;
 
         public Status GameStatus { get; set; }
@@ -36,31 +31,28 @@ namespace Until.Games
         public FileAttachment TableImage(in EmojiService emoji) => this.table.ToImage(emoji);
         public SequencePlayer CurrentPlayer => this.Players[currentPlayerIndex] as SequencePlayer;
 
-        public string TakeCard()
+        public Card PullCard()
         {
             Random r = new Random();
-            int i = r.Next(0, this.deck.Count);
-            string temp = this.deck[i];
+            byte i = (byte)r.Next(0, this.deck.Count);
+            Card temp = this.deck[i];
             this.deck.RemoveAt(i);
             return temp;
         }
 
-        public SequenceGame(ulong channelId, ulong userId, ulong messageId, EmojiService emoji) : base(channelId, messageId)
+        public SequenceGame(ulong channelId, ulong userId, EmojiService emojiService) : base(channelId)
         {
             this.Players.Add(new SequencePlayer(userId));
-            this.table = new SequenceTable(emoji);
+            this.table = new SequenceTable(emojiService);
             this.currentPlayerIndex = 0;
-            this.GameStatus = Status.Init;
-            this.deck = new List<string>();
-            for (int i = 0; i < 2; i++)
-                foreach (string c in Card.Deck)
-                    this.deck.Add(c);
+            this.GameStatus = Status.Join;
+            this.deck = Deck.French();
         }
     }
 
     public class SequencePlayer : Player
     {
-        private List<string> hand;
+        private List<Card> hand;
 
         public SequenceGame.Color Color { get; set; }
 
@@ -80,17 +72,17 @@ namespace Until.Games
             }
         }
 
-        public List<string> HeldCardNames => this.hand.Select(c => Card.Name(c)).ToList();
+        public List<string> HeldCardNames => this.hand.Select(c => c.ToString()).ToList();
 
         public void FillHand(in SequenceGame game)
         {
             for (int i = 0; i < 7; i++)
-                this.hand.Add(game.TakeCard());
+                this.hand.Add(game.PullCard());
         }
 
         public SequencePlayer(ulong userId) : base(userId)
         {
-            this.hand = new List<string>();
+            this.hand = new List<Card>();
             this.Color = SequenceGame.Color.None;
         }
     }
@@ -107,7 +99,7 @@ namespace Until.Games
 
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
-                    canvas.DrawBitmap(emojiService.GetImage(cells[x, y].Card.Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
+                    canvas.DrawBitmap(emojiService.GetImage(cells[x, y].CardEmote.Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
 
             return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Sequence.png");
         }
@@ -118,15 +110,15 @@ namespace Until.Games
 
             string[] tableBase = new[]
             {
-                "XX", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "XX", 
-                "6C", "5C", "4C", "3C", "2C", "AH", "KH", "QH", "TH", "TS", 
-                "7C", "AS", "2D", "3D", "4D", "5D", "6D", "7D", "9H", "QS", 
-                "8C", "KS", "6C", "5C", "4C", "3C", "2C", "8D", "8H", "KS", 
-                "9C", "QS", "7C", "6H", "5H", "4H", "AH", "9D", "7H", "AS", 
-                "TC", "TS", "8C", "7H", "2H", "3H", "KH", "TD", "6H", "2D", 
-                "QC", "9S", "9C", "8H", "9H", "TH", "QH", "QD", "5H", "3D", 
-                "KC", "8S", "TC", "QC", "KC", "AC", "AD", "KD", "4H", "4D", 
-                "AC", "7S", "6S", "5S", "4S", "3S", "2S", "2H", "3H", "5D", 
+                "XX", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "XX",
+                "6C", "5C", "4C", "3C", "2C", "AH", "KH", "QH", "TH", "TS",
+                "7C", "AS", "2D", "3D", "4D", "5D", "6D", "7D", "9H", "QS",
+                "8C", "KS", "6C", "5C", "4C", "3C", "2C", "8D", "8H", "KS",
+                "9C", "QS", "7C", "6H", "5H", "4H", "AH", "9D", "7H", "AS",
+                "TC", "TS", "8C", "7H", "2H", "3H", "KH", "TD", "6H", "2D",
+                "QC", "9S", "9C", "8H", "9H", "TH", "QH", "QD", "5H", "3D",
+                "KC", "8S", "TC", "QC", "KC", "AC", "AD", "KD", "4H", "4D",
+                "AC", "7S", "6S", "5S", "4S", "3S", "2S", "2H", "3H", "5D",
                 "XX", "AD", "KD", "QD", "TD", "9D", "8D", "7D", "6D", "XX"
             };
 
@@ -135,25 +127,19 @@ namespace Until.Games
                 for (byte x = 0; x < 10; x++)
                 {
                     string c = tableBase[i++];
-                    string cf = Card.Faces[c[0]];
-                    string cs = Card.Suits[c[1]];
-                    this.cells[x, y] = new SequenceTableCell(x, y, emoji.GetEmoji(cf + cs), cf == "X" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
+                    this.cells[x, y] = new SequenceTableCell(emoji.GetEmoji(new Card(c).ToString()), c == "XX" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
                 }
         }
     }
 
     class SequenceTableCell
     {
-        public byte X { get; private set; }
-        public byte Y { get; private set; }
-        public GuildEmote Card { get; set; }
+        public GuildEmote CardEmote { get; set; }
         public SequenceGame.Color Color { get; set; }
 
-        public SequenceTableCell(byte x, byte y, GuildEmote card, SequenceGame.Color color)
+        public SequenceTableCell(GuildEmote cardEmote, SequenceGame.Color color)
         {
-            this.X = x;
-            this.Y = y;
-            this.Card = card;
+            this.CardEmote = cardEmote;
             this.Color = color;
         }
     }
