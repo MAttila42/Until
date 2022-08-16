@@ -17,16 +17,13 @@ namespace Until.Services
         public async Task LoadEmojis(DiscordSocketClient client, List<ulong> emojiServers)
         {
             Log("Loading emojis");
-
             this.emojis = new List<GuildEmote>();
             foreach (ulong s in emojiServers)
                 foreach (GuildEmote e in client.GetGuild(s).Emotes)
                     this.emojis.Add(e);
-
             this.images = new Dictionary<string, SKBitmap>();
             foreach (GuildEmote e in this.emojis)
                 this.images.Add(e.Name, SKBitmap.Decode(new MemoryStream(await new HttpClient().GetByteArrayAsync(e.Url))).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low));
-
             Log("Emojis loaded");
         }
     }

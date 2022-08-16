@@ -21,7 +21,7 @@ namespace Until
             this._config = config;
             this._client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildEmojis | GatewayIntents.GuildMembers,
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildEmojis,
                 UseInteractionSnowflakeDate = false
             });
             this._interaction = new InteractionService(_client.Rest);
@@ -47,6 +47,7 @@ namespace Until
 
             _client.SlashCommandExecuted += ExecuteInteractionAsync;
             _client.ButtonExecuted += ExecuteInteractionAsync;
+            _client.SelectMenuExecuted += ExecuteInteractionAsync;
             _client.ModalSubmitted += ExecuteInteractionAsync;
 
             _client.Ready += async () =>

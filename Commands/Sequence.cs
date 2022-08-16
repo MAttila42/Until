@@ -44,7 +44,7 @@ namespace Until.Commands
             }
         }
 
-        private Embed CurrentEmbed(SequenceGame game)
+        private Embed CurrentEmbed(in SequenceGame game)
         {
             StringBuilder players = new StringBuilder();
             foreach (SequencePlayer p in game.Players)
@@ -61,7 +61,7 @@ namespace Until.Commands
 
             return embed.Build();
         }
-        private MessageComponent CurrentComponents(SequenceGame game)
+        private MessageComponent CurrentComponents(in SequenceGame game)
         {
             ComponentBuilder components = null;
             if (game.GameStatus != SequenceGame.Status.Color && game.GameStatus != SequenceGame.Status.Game)
@@ -155,7 +155,7 @@ namespace Until.Commands
         }
 
         [ComponentInteraction("sequence-selectcolor:*,*")]
-        public async Task SelectColor(string gameId, string c)
+        public async Task SelectColor(string gameId, string color)
         {
             await DeferAsync();
             SequenceGame game;
@@ -164,9 +164,9 @@ namespace Until.Commands
 
             try
             {
-                if (game.Players.Select(p => ((SequencePlayer)p).Color).ToList().Contains(colors[c]))
+                if (game.Players.Select(p => ((SequencePlayer)p).Color).ToList().Contains(colors[color]))
                     return;
-                ((SequencePlayer)game.Players.Find(p => p.ID == Context.User.Id)).Color = colors[c];
+                ((SequencePlayer)game.Players.Find(p => p.ID == Context.User.Id)).Color = colors[color];
             }
             catch (Exception) { return; }
 
@@ -175,33 +175,79 @@ namespace Until.Commands
             if (game.Players.Count == game.Players.Where(p => ((SequencePlayer)p).Color != SequenceGame.Color.None).Select(p => ((SequencePlayer)p).Color).Distinct().Count())
             {
                 game.GameStatus = SequenceGame.Status.Game;
-                await ((SocketMessageComponent)Context.Interaction).Message.ModifyAsync(m => { m.Content = $"{_emoji.GetEmoji("util_loading")} Loading..."; }).ConfigureAwait(false);
-                await Update(game);
+                await ((SocketMessageComponent)Context.Interaction).Message.ModifyAsync(m => { m.Content = $"{_emoji.GetEmoji("util_loading")} Loading..."; m.Components = CurrentComponents(game); }).ConfigureAwait(false);
+                game.Players.ForEach(p => ((SequencePlayer)p).FillHand(game));
+                await UpdateGameAsync(game);
             }
         }
 
-        private async Task Update(SequenceGame game)
+        private async Task UpdateGameAsync(SequenceGame game) => await UpdateGameAsync(game, 0);
+        private async Task UpdateGameAsync(SequenceGame game, ulong messageId)
+            => await (messageId == 0 ? ((SocketMessageComponent)Context.Interaction).Message : (IUserMessage)await Context.Channel.GetMessageAsync(messageId))
+                .ModifyAsync(async m =>
+                {
+                    m.Content = $"{(await _client.GetUserAsync(game.CurrentPlayer.ID)).Mention}'s turn";
+                    m.Attachments = new List<FileAttachment> { game.TableImage(_emoji) };
+                    m.Embed = null;
+                    m.Components = new ComponentBuilder()
+                        .WithButton("My cards", $"sequence-cards:{game.ID}")
+                        .Build();
+                });
+
+        private List<Card> GetHand(SequenceGame game) => ((SequencePlayer)game.GetPlayer(Context.User.Id)).Hand;
+        private string CurrentCards(SequenceGame game)
         {
-            List<FileAttachment> attachments = new List<FileAttachment> { game.TableImage(_emoji) };
-
-            IGuildUser user = await Context.Guild.GetUserAsync(game.CurrentPlayer.ID);
-            EmbedBuilder embed = new EmbedBuilder()
-                .AddField($"{(user.Nickname == "" ? user.Username : user.Nickname)}'s turn", "To check your cards use the `/cards` command!")
-                .WithColor(new Color(0x5864f2));
-
+            StringBuilder s = new StringBuilder();
+            foreach (Card c in GetHand(game))
+                s.Append(_emoji.GetEmoji(c.EmoteName));
+            return s.ToString();
+        }
+        private MessageComponent CurrentSelectMenu(SequenceGame game, ulong gameMessage)
+        {
             SelectMenuBuilder selectMenu = new SelectMenuBuilder()
                 .WithPlaceholder("Select a card to play!")
-                .WithCustomId($"sequence-cardselectionmenu:{game.ID}")
+                .WithCustomId($"sequence-selectcard:{game.ID},{gameMessage}")
                 .WithMinValues(1)
                 .WithMaxValues(1);
+            foreach (Card c in GetHand(game))
+                selectMenu.AddOption(c.Name, c.EmoteName, "Click to choose", _emoji.GetEmoji(c.EmoteName));
+            return new ComponentBuilder().WithSelectMenu(selectMenu).Build();
+        }
 
-            for (int i = 1; i <= 7; i++)
-                selectMenu.AddOption(i.ToString(), i.ToString());
+        [ComponentInteraction("sequence-cards:*")]
+        public async Task Cards(string gameId)
+        {
+            SequenceGame game = _game.GetGame(int.Parse(gameId)) as SequenceGame;
+            await RespondAsync(CurrentCards(game), components: CurrentSelectMenu(game, ((IComponentInteraction)Context.Interaction).Message.Id), ephemeral: true);
+        }
 
-            ComponentBuilder components = new ComponentBuilder()
-                .WithSelectMenu(selectMenu);
+        [ComponentInteraction("sequence-selectcard:*,*")]
+        public async Task SelectCard(string gameId, string messageIdStr, string[] selectedCards)
+        {
+            SequenceGame game = _game.GetGame(int.Parse(gameId)) as SequenceGame;
+            SequencePlayer player = game.GetPlayer(Context.User.Id) as SequencePlayer;
 
-            await ((SocketMessageComponent)Context.Interaction).Message.ModifyAsync(m => { m.Content = ""; m.Attachments = attachments; m.Embed = embed.Build(); m.Components = components.Build(); });
+            if (game.CurrentPlayer.ID != player.ID)
+                return;
+
+            string card = selectedCards[0];
+            byte cardCount = game.CountAvaliable(card);
+            switch (cardCount)
+            {
+                case 0:
+                    return;
+                case 1:
+                    game.PlaceChip(game.CurrentPlayer.Color, card, 0);
+                    break;
+                default:
+                    game.PlaceChip(game.CurrentPlayer.Color, card, 0);
+                    break;
+            }
+
+            ulong messageId = ulong.Parse(messageIdStr);
+            game.CurrentPlayerIndex++;
+            await UpdateGameAsync(game, messageId);
+            await ((IComponentInteraction)Context.Interaction).UpdateAsync(m => { m.Content = CurrentCards(game); m.Components = CurrentSelectMenu(game, messageId); });
         }
 
         private Dictionary<string, SequenceGame.Color> colors = new Dictionary<string, SequenceGame.Color>

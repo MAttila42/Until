@@ -53,7 +53,7 @@ namespace Until.Commands
                         break;
                 }
             }
-            catch (Exception e) { await RespondAsync(embed: EmbedService.Error("Error", $"Couldn't find bash at `/bin/bash`.\n```{e.Message}```"), ephemeral: true); }
+            catch (Exception e) { await RespondAsync(embed: EmbedService.Error("Error", $"```{e.Message}```"), ephemeral: true); }
         }
     }
 }

@@ -24,12 +24,21 @@ namespace Until.Games
 
         private readonly SequenceTable table;
         private readonly List<Card> deck;
-        private byte currentPlayerIndex;
 
         public Status GameStatus { get; set; }
+        public byte CurrentPlayerIndex { get; set; }
 
+        public byte CountAvaliable(in string cardName) => this.table.CountCard(cardName);
+        public SequencePlayer CurrentPlayer => this.GetPlayer(this.CurrentPlayerIndex) as SequencePlayer;
         public FileAttachment TableImage(in EmojiService emoji) => this.table.ToImage(emoji);
-        public SequencePlayer CurrentPlayer => this.Players[currentPlayerIndex] as SequencePlayer;
+
+        public void PlaceChip(in Color color, in string cardName) => PlaceChip(color, cardName, 0);
+        public void PlaceChip(in Color color, string cardName, in byte index)
+        {
+            this.CurrentPlayer.Hand.Remove(this.CurrentPlayer.Hand.Find(c => c.EmoteName == cardName));
+            this.CurrentPlayer.Hand.Add(PullCard());
+            this.table.PlaceChip(color, cardName, index);
+        }
 
         public Card PullCard()
         {
@@ -44,7 +53,7 @@ namespace Until.Games
         {
             this.Players.Add(new SequencePlayer(userId));
             this.table = new SequenceTable(emojiService);
-            this.currentPlayerIndex = 0;
+            this.CurrentPlayerIndex = 0;
             this.GameStatus = Status.Join;
             this.deck = Deck.French();
         }
@@ -52,8 +61,7 @@ namespace Until.Games
 
     public class SequencePlayer : Player
     {
-        private List<Card> hand;
-
+        public List<Card> Hand { get; set; }
         public SequenceGame.Color Color { get; set; }
 
         public string ColorEmoji
@@ -71,18 +79,29 @@ namespace Until.Games
                 return colors[this.Color];
             }
         }
-
-        public List<string> HeldCardNames => this.hand.Select(c => c.ToString()).ToList();
+        public Color ColorHEX
+        {
+            get
+            {
+                Dictionary<SequenceGame.Color, Color> colors = new Dictionary<SequenceGame.Color, Color>
+                {
+                    { SequenceGame.Color.Red, new(0xbe1931) },
+                    { SequenceGame.Color.Green, new(0x4da631) },
+                    { SequenceGame.Color.Blue, new(0x445893) }
+                };
+                return colors[this.Color];
+            }
+        }
 
         public void FillHand(in SequenceGame game)
         {
-            for (int i = 0; i < 7; i++)
-                this.hand.Add(game.PullCard());
+            while (this.Hand.Count < 7)
+                this.Hand.Add(game.PullCard());
         }
 
         public SequencePlayer(ulong userId) : base(userId)
         {
-            this.hand = new List<Card>();
+            this.Hand = new List<Card>();
             this.Color = SequenceGame.Color.None;
         }
     }
@@ -91,17 +110,34 @@ namespace Until.Games
     {
         private readonly SequenceTableCell[,] cells;
 
+        public byte CountCard(in string c)
+        {
+            byte count = 0;
+            foreach (SequenceTableCell r in this.cells)
+                if (r.CardEmote.Name == c)
+                    count++;
+            return count;
+        }
+
+        public void PlaceChip(in SequenceGame.Color c, in string n, in byte i)
+        {
+            byte t = 0;
+            for (byte y = 0; y < 10; y++)
+                for (byte x = 0; x < 10; x++)
+                    if (this.cells[x, y].CardEmote.Name == n)
+                        if (i == t++)
+                            this.cells[x, y].Color = c;
+        }
+
         public FileAttachment ToImage(in EmojiService emojiService)
         {
             SKSurface tempSurface = SKSurface.Create(new SKImageInfo(640, 766));
             SKCanvas canvas = tempSurface.Canvas;
             canvas.Clear(SKColors.Transparent);
-
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
-                    canvas.DrawBitmap(emojiService.GetImage(cells[x, y].CardEmote.Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
-
-            return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Sequence.png");
+                    canvas.DrawBitmap(emojiService.GetImage(cells[x, y].Color == SequenceGame.Color.None || cells[x, y].Color == SequenceGame.Color.Joker ? cells[x, y].CardEmote.Name : emojiService.GetEmoji($"{cells[x, y].Color.ToString().ToLower(System.Globalization.CultureInfo.InvariantCulture)}_chip_card").Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
+            return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Until-Sequence.png");
         }
 
         public SequenceTable(EmojiService emoji)
@@ -127,7 +163,7 @@ namespace Until.Games
                 for (byte x = 0; x < 10; x++)
                 {
                     string c = tableBase[i++];
-                    this.cells[x, y] = new SequenceTableCell(emoji.GetEmoji(new Card(c).ToString()), c == "XX" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
+                    this.cells[x, y] = new SequenceTableCell(emoji.GetEmoji(new Card(c).EmoteName), c == "XX" ? SequenceGame.Color.Joker : SequenceGame.Color.None);
                 }
         }
     }

@@ -7,7 +7,7 @@ namespace Until.Services
         private readonly List<Game> games;
 
         public Game GetGame(int id) => this.games.Find(g => g.ID == id);
-        public Game GetGame(IInteractionContext ctx) => this.games.Find(g => g.Players.Any(p => p.ID == ctx.User.Id) && g.Channel == ctx.Channel.Id);
+        public Game GetGame(IInteractionContext ctx) => this.games.Find(g => g.GetPlayer(ctx.User.Id) != null && g.Channel == ctx.Channel.Id);
         public void RemoveGame(in Game game) => this.games.Remove(game);
 
         public void AddGame(in Game game)
@@ -27,14 +27,16 @@ namespace Until.Services
     {
         public int ID { get; set; }
         public ulong Channel { get; private set; }
-        private List<Player> players;
-        public List<Player> Players => this.players;
+        public List<Player> Players { get; private set; }
+
+        public Player GetPlayer(ulong id) => this.Players.Find(p => p.ID == id);
+        public Player GetPlayer(byte index) => this.Players[index % this.Players.Count];
 
         protected Game(ulong channelId)
         {
             this.ID = 0;
             this.Channel = channelId;
-            this.players = new List<Player>();
+            this.Players = new List<Player>();
         }
     }
 
@@ -53,8 +55,11 @@ namespace Until.Services
         public string Face { get; set; }
         public string Suit { get; set; }
 
-        public override string ToString() => $"{this.Face}{(this.Suit == "joker" ? "" : $"_of_{this.Suit}")}";
-        public string ToString(bool code) => $"{Deck.Faces[this.Face]}{Deck.Suits[this.Suit]}";
+        public string Name => $"{Capital(this.Face)} of {Capital(this.Suit)}";
+        public string EmoteName => $"{this.Face}{(this.Suit == "joker" ? "" : $"_of_{this.Suit}")}";
+        public string Code => $"{Deck.Faces[this.Face]}{Deck.Suits[this.Suit]}";
+
+        private string Capital(in string s) => char.ToUpper(s[0]) + s.Substring(1);
 
         public Card(string code)
         {
@@ -71,7 +76,7 @@ namespace Until.Services
     public static class Deck
     {
         public static List<Card> French() => French(0);
-        public static List<Card> French(byte jokers)
+        public static List<Card> French(in byte jokers)
         {
             List<Card> temp = new List<Card>();
             foreach (string f in Faces.Keys.Take(13))
