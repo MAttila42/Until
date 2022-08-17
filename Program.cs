@@ -3,6 +3,7 @@
     public class Program
     {
         public static void Main()
-            => new Until(new Config("config.xml")).MainAsync().GetAwaiter().GetResult();
+            => new Until(new("config.xml")).MainAsync().GetAwaiter().GetResult();
+        protected Program() { }
     }
 }

@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using System.Globalization;
+using SkiaSharp;
 using Discord;
 using Until.Services;
 
@@ -30,14 +31,17 @@ namespace Until.Games
 
         public byte CountAvaliable(in string cardName) => this.table.CountCard(cardName);
         public SequencePlayer CurrentPlayer => this.GetPlayer(this.CurrentPlayerIndex) as SequencePlayer;
-        public FileAttachment TableImage(in EmojiService emoji) => this.table.ToImage(emoji);
+
+        public FileAttachment TableImage(in EmojiService emojiService) => TableImage(emojiService, "");
+        public FileAttachment TableImage(in EmojiService emojiService, in string highlightedCardName) => this.table.ToImage(emojiService, highlightedCardName);
 
         public void PlaceChip(in Color color, in string cardName) => PlaceChip(color, cardName, 0);
-        public void PlaceChip(in Color color, string cardName, in byte index)
+        public void PlaceChip(in Color color, in string cardName, in byte index) => this.table.PlaceChip(color, cardName, index);
+
+        public void ThrowCard(string cardName)
         {
             this.CurrentPlayer.Hand.Remove(this.CurrentPlayer.Hand.Find(c => c.EmoteName == cardName));
             this.CurrentPlayer.Hand.Add(PullCard());
-            this.table.PlaceChip(color, cardName, index);
         }
 
         public Card PullCard()
@@ -53,9 +57,9 @@ namespace Until.Games
         {
             this.Players.Add(new SequencePlayer(userId));
             this.table = new SequenceTable(emojiService);
-            this.CurrentPlayerIndex = 0;
-            this.GameStatus = Status.Join;
             this.deck = Deck.French();
+            this.GameStatus = Status.Join;
+            this.CurrentPlayerIndex = 0;
         }
     }
 
@@ -110,35 +114,75 @@ namespace Until.Games
     {
         private readonly SequenceTableCell[,] cells;
 
-        public byte CountCard(in string c)
+        public byte CountCard(in string name)
         {
             byte count = 0;
             foreach (SequenceTableCell r in this.cells)
-                if (r.CardEmote.Name == c)
+                if (r.CardEmote.Name == name)
                     count++;
             return count;
         }
 
-        public void PlaceChip(in SequenceGame.Color c, in string n, in byte i)
+        public void PlaceChip(in SequenceGame.Color color, in string name, in byte i)
         {
-            byte t = 0;
+            byte temp = 0;
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
-                    if (this.cells[x, y].CardEmote.Name == n)
-                        if (i == t++)
-                            this.cells[x, y].Color = c;
+                    if (this.cells[x, y].CardEmote.Name == name)
+                        if (i == temp++)
+                            this.cells[x, y].Color = color;
         }
 
-        public FileAttachment ToImage(in EmojiService emojiService)
+        public FileAttachment ToImage(in EmojiService emojiService, in string name)
         {
             SKSurface tempSurface = SKSurface.Create(new SKImageInfo(640, 766));
             SKCanvas canvas = tempSurface.Canvas;
             canvas.Clear(SKColors.Transparent);
+
+            byte temp = 1;
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
-                    canvas.DrawBitmap(emojiService.GetImage(cells[x, y].Color == SequenceGame.Color.None || cells[x, y].Color == SequenceGame.Color.Joker ? cells[x, y].CardEmote.Name : emojiService.GetEmoji($"{cells[x, y].Color.ToString().ToLower(System.Globalization.CultureInfo.InvariantCulture)}_chip_card").Name).Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), SKRect.Create(x * 64, y * 78, 64, 64));
+                {
+                    SequenceTableCell cell = cells[x, y];
+                    SequenceGame.Color color = cell.Color;
+                    bool unclaimed = color == SequenceGame.Color.None || color == SequenceGame.Color.Joker;
+                    string imageName;
+
+                    if (unclaimed)
+                        imageName = cell.CardEmote.Name;
+                    else
+                        imageName = emojiService.GetEmoji($"{color.ToString().ToLower(CultureInfo.InvariantCulture)}_chip_card").Name;
+
+                    if (name != "")
+                    {
+                        if (cell.CardEmote.Name == name)
+                            imageName = $"card_{numbers[temp++]}";
+                        else
+                            imageName = $"faded_{imageName}";
+                        if (!unclaimed)
+                            imageName = $"half_{imageName}";
+                    }
+
+                    canvas.DrawBitmap(
+                        emojiService
+                            .GetImage(imageName)
+                            .Resize(new SKImageInfo(64, 64), SKFilterQuality.Low), 
+                        SKRect.Create(x * 64, y * 78, 64, 64));
+                }
             return new FileAttachment(tempSurface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).AsStream(), "Until-Sequence.png");
         }
+        private Dictionary<byte, string> numbers = new Dictionary<byte, string>
+        {
+            { 1, "one" },
+            { 2, "two" },
+            { 3, "three" },
+            { 4, "four" },
+            { 5, "five" },
+            { 6, "six" },
+            { 7, "seven" },
+            { 8, "eight" },
+            { 9, "nine" },
+        };
 
         public SequenceTable(EmojiService emoji)
         {
