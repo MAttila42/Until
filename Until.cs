@@ -22,6 +22,7 @@ namespace Until
             this._client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildEmojis,
+                HandlerTimeout = null,
                 UseInteractionSnowflakeDate = false
             });
             this._interaction = new InteractionService(_client.Rest);

@@ -246,8 +246,8 @@ namespace Until.Commands
 
             ulong messageId = ulong.Parse(messageIdStr);
             game.CurrentPlayerIndex++;
-            await UpdateGameAsync(game, messageId);
             await ((IComponentInteraction)Context.Interaction).UpdateAsync(m => { m.Content = CurrentCards(game); m.Components = CurrentSelectMenu(game, messageId); });
+            await UpdateGameAsync(game, messageId);
         }
 
         private Dictionary<string, SequenceGame.Color> colors = new Dictionary<string, SequenceGame.Color>
