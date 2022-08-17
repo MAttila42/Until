@@ -75,6 +75,15 @@ namespace Until.Services
 
     public static class Deck
     {
+        public static List<Card> Times(this List<Card> deck, in byte n)
+        {
+            List<Card> temp = new List<Card>();
+            foreach (Card c in deck)
+                for (int i = 0; i < n; i++)
+                    temp.Add(c);
+            return temp;
+        }
+
         public static List<Card> French() => French(0);
         public static List<Card> French(in byte jokers)
         {

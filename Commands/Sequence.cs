@@ -230,7 +230,8 @@ namespace Until.Commands
                 .WithMinValues(1)
                 .WithMaxValues(1);
             foreach (Card c in GetHand(game))
-                selectMenu.AddOption(c.Name, c.EmoteName, "Click to choose", _emoji.GetEmoji(c.EmoteName));
+                if (!selectMenu.Options.Any(o => o.Value == c.EmoteName))
+                    selectMenu.AddOption(c.Name, c.EmoteName, "Click to choose", _emoji.GetEmoji(c.EmoteName));
             return new ComponentBuilder().WithSelectMenu(selectMenu).Build();
         }
 
@@ -275,11 +276,14 @@ namespace Until.Commands
         [ComponentInteraction("sequence-selectcardnumber:*,*,*")]
         public async Task SelectCardNumber(string gameId, string cardName, string index)
         {
+            await DeferAsync();
             SequenceGame game = _game.GetGame(int.Parse(gameId)) as SequenceGame;
+            if (game.CurrentPlayer.ID != Context.User.Id)
+                return;
+
             game.PlaceChip(game.CurrentPlayer.Color, cardName, byte.Parse(index));
             game.CurrentPlayerIndex++;
             await UpdateGameAsync(game);
-            await DeferAsync();
         }
 
         private Dictionary<string, SequenceGame.Color> colors = new Dictionary<string, SequenceGame.Color>

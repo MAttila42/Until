@@ -57,7 +57,7 @@ namespace Until.Games
         {
             this.Players.Add(new SequencePlayer(userId));
             this.table = new SequenceTable(emojiService);
-            this.deck = Deck.French();
+            this.deck = Deck.French().Times(2);
             this.GameStatus = Status.Join;
             this.CurrentPlayerIndex = 0;
         }
@@ -118,7 +118,7 @@ namespace Until.Games
         {
             byte count = 0;
             foreach (SequenceTableCell r in this.cells)
-                if (r.CardEmote.Name == name)
+                if (r.Color == SequenceGame.Color.None && r.CardEmote.Name == name)
                     count++;
             return count;
         }
@@ -128,9 +128,12 @@ namespace Until.Games
             byte temp = 0;
             for (byte y = 0; y < 10; y++)
                 for (byte x = 0; x < 10; x++)
-                    if (this.cells[x, y].CardEmote.Name == name)
+                {
+                    SequenceTableCell c = this.cells[x, y];
+                    if (c.Color == SequenceGame.Color.None && c.CardEmote.Name == name)
                         if (i == temp++)
                             this.cells[x, y].Color = color;
+                }
         }
 
         public FileAttachment ToImage(in EmojiService emojiService, in string name)
@@ -158,9 +161,7 @@ namespace Until.Games
                         if (cell.CardEmote.Name == name)
                             imageName = $"card_{numbers[temp++]}";
                         else
-                            imageName = $"faded_{imageName}";
-                        if (!unclaimed)
-                            imageName = $"half_{imageName}";
+                            imageName = $"{(!unclaimed ? "half_" : "")}faded_{imageName}";
                     }
 
                     canvas.DrawBitmap(
